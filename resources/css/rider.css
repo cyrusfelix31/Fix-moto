@@ -1,0 +1,1306 @@
+
+/* ==========================================
+   FIXMOTO RIDER STYLESHEET
+   ========================================== */
+
+
+/* BREADCRUMB */
+
+.rider-breadcrumb {
+    margin: 0 0 18px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.rider-breadcrumb ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.rider-breadcrumb li + li:before {
+    content: "/";
+    margin-right: 9px;
+    color: #a8b0ab;
+}
+
+.rider-breadcrumb a {
+    color: var(--green);
+    font-weight: 700;
+}
+
+.rider-breadcrumb [aria-current=page] {
+    color: var(--ink);
+    font-weight: 700;
+}
+
+
+/* RIDER DASHBOARD */
+
+.rider-request-card {
+    align-self: start;
+    min-width: 0;
+}
+
+.rider-map-header {
+    padding: 16px 20px 0;
+}
+
+.rider-map-header p {
+    margin: 4px 0 0;
+}
+
+.rider-dashboard-links {
+    display: grid;
+    gap: 8px;
+}
+
+.rider-dashboard-link {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 18px;
+    align-items: center;
+    gap: 11px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+}
+
+.rider-dashboard-link:hover {
+    border-color: var(--green);
+    background: #f7faf7;
+}
+
+.rider-dashboard-link > span:nth-child(2) {
+    display: grid;
+    gap: 4px;
+}
+
+.rider-dashboard-link small {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.rider-dashboard-link > svg {
+    width: 16px;
+    color: var(--green);
+}
+
+
+/* RIDER VEHICLES */
+
+.rider-vehicle-form,
+.rider-vehicle-list {
+    margin-bottom: 18px;
+}
+
+.rider-vehicle-form .card-header,
+.rider-vehicle-list .card-header {
+    margin-bottom: 18px;
+}
+
+.rider-vehicle-form .card-header p,
+.rider-vehicle-list .card-header p {
+    margin: 5px 0 0;
+    font-size: 12px;
+}
+
+.rider-form-wide {
+    grid-column: 1 / -1;
+}
+
+.rider-form-submit {
+    justify-self: start;
+}
+
+.rider-error {
+    margin: 0 0 16px;
+}
+
+.rider-vehicle-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+}
+
+.rider-vehicle-item > div {
+    min-width: 0;
+    flex: 1;
+}
+
+.rider-vehicle-item p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.rider-vehicle-plate {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.rider-empty-state {
+    padding: 18px 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+
+/* SERVICE HISTORY */
+
+.history-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding-top: 16px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.history-pagination > div {
+    display: flex;
+    gap: 8px;
+}
+
+.history-pagination a,
+.history-pagination span {
+    padding: 8px 11px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.history-pagination a {
+    color: var(--green);
+    font-weight: 700;
+}
+
+.history-pagination .pagination-disabled {
+    opacity: 0.55;
+}
+
+
+/* ==========================================
+   REQUEST ROADSIDE HELP
+   ========================================== */
+
+.request-breadcrumb {
+    margin-bottom: 13px;
+    font-size: 11px;
+}
+
+.request-intro {
+    font-size: 13px;
+    margin: 6px 0 18px;
+}
+
+
+/* REQUEST STEPPER */
+
+.request-stepper {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 20px;
+}
+
+.request-stepper > i {
+    height: 1px;
+    flex: 1;
+    background: var(--line);
+}
+
+.stepper-step {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font: inherit;
+    cursor: pointer;
+}
+
+.stepper-step span {
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 800;
+    background: #ffffff;
+}
+
+.stepper-step b {
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.stepper-step.active,
+.stepper-step.complete {
+    color: var(--green);
+}
+
+.stepper-step.active span,
+.stepper-step.complete span {
+    background: var(--green);
+    border-color: var(--green);
+    color: #ffffff;
+}
+
+.stepper-step:disabled {
+    cursor: default;
+}
+
+
+/* REQUEST WIZARD */
+
+.request-wizard {
+    display: grid;
+    gap: 14px;
+    margin-top: 0 !important;
+}
+
+.wizard-panel {
+    display: grid;
+    gap: 13px;
+    min-width: 0;
+}
+
+.wizard-panel[hidden] {
+    display: none;
+}
+
+.wizard-panel > label {
+    font-size: 13px;
+}
+
+.wizard-panel input,
+.wizard-panel select,
+.wizard-panel textarea {
+    font-size: 16px;
+    min-height: 44px;
+}
+
+.wizard-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.wizard-hint {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.wizard-hint a {
+    color: var(--green);
+    font-weight: 800;
+    text-decoration: underline;
+}
+
+.wizard-error {
+    margin: 0;
+    border-radius: 8px;
+    background: #fdeaea;
+    color: #8d3030;
+    padding: 10px 12px;
+    font-size: 12px;
+}
+
+.wizard-error[hidden] {
+    display: none;
+}
+
+
+/* SERVICE SELECTION */
+
+.service-fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+}
+
+.service-fieldset legend {
+    font-weight: 800;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.service-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    margin-top: 12px;
+}
+
+.service-option {
+    position: relative;
+    min-width: 0;
+    min-height: 62px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+    background: #ffffff;
+    transition: border-color .15s, background .15s;
+}
+
+.service-option:has(input:checked) {
+    border-color: var(--green);
+    background: #f0f7f1;
+}
+
+.service-option input {
+    width: 18px;
+    min-height: 18px;
+    height: 18px;
+    accent-color: var(--green);
+    flex: none;
+}
+
+.service-option-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    flex: none;
+    background: #edf5ef;
+    color: var(--green);
+}
+
+.service-option-icon svg {
+    width: 16px;
+}
+
+.service-option-label {
+    font-size: 12px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.service-check {
+    display: none;
+    margin-left: auto;
+    color: var(--green);
+}
+
+.service-option:has(input:checked) .service-check {
+    display: grid;
+}
+
+.service-check svg {
+    width: 15px;
+}
+
+
+/* GPS LOCATION */
+
+.pin-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 9px;
+}
+
+.pin-heading h3 {
+    margin: 0 0 4px;
+    font-size: 14px;
+}
+
+.gps-button {
+    flex: none;
+    padding: 9px 10px;
+    font-size: 11px;
+}
+
+.gps-button svg {
+    width: 15px;
+    vertical-align: middle;
+}
+
+.request-location-map {
+    height: 210px;
+    width: 100%;
+    border-radius: 10px;
+    background: #e6ebe7;
+    z-index: 0;
+}
+
+.request-details p {
+    line-height: 1.5;
+}
+
+
+/* ==========================================
+   RIDER SERVICE TRACKING PAGE
+   ========================================== */
+
+.rider-tracking-page {
+    width: 100%;
+    min-width: 0;
+}
+
+.rider-tracking-page .rider-tracking-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 20px;
+}
+
+.rider-tracking-page .rider-progress-card,
+.rider-tracking-page .rider-dispatch-card {
+    min-width: 0;
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid #e6e8e4;
+    border-radius: 16px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+
+/* SERVICE PROGRESS HEADER */
+
+.rider-progress-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.rider-tracking-page .rider-progress-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #1e2925;
+}
+
+.rider-progress-header p {
+    margin: 6px 0 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #6e7a75;
+}
+
+
+/* SERVICE STATUS BADGE */
+
+.rider-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 7px 14px;
+    border-radius: 30px;
+    background: #fff3d8;
+    color: #926216;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.rider-status-badge.status-completed {
+    background: #e5f2e9;
+    color: #145740;
+}
+
+
+/* SERVICE PROGRESS BAR */
+
+.rider-progress-bar {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 7px;
+    width: 100%;
+    margin: 20px 0 26px;
+}
+
+.rider-progress-bar span {
+    display: block;
+    width: 100%;
+    height: 6px;
+    background: #e4e8e5;
+    border-radius: 20px;
+}
+
+.rider-progress-bar span.done {
+    background: #145740;
+}
+
+
+/* SERVICE TIMELINE */
+
+.rider-service-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 20px 0 28px;
+    padding: 0;
+}
+
+.rider-timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 48px;
+    padding: 6px 0;
+    box-sizing: border-box;
+}
+
+.rider-timeline-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #e8ece9;
+    color: #64748b;
+}
+
+.rider-timeline-icon svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+}
+
+.rider-timeline-item.is-done .rider-timeline-icon {
+    background: #145740;
+    color: #ffffff;
+}
+
+.rider-timeline-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+.rider-timeline-content strong {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: #1e2925;
+}
+
+.rider-timeline-content small {
+    display: block;
+    margin: 0;
+    color: #6e7a75;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.rider-timeline-item.is-current
+.rider-timeline-content strong {
+    color: #145740;
+}
+
+
+/* VEHICLE AND MECHANIC INFORMATION */
+
+.rider-service-details {
+    display: flex;
+    flex-direction: column;
+    margin: 24px 0;
+    padding-top: 8px;
+    border-top: 1px solid #e6e8e4;
+}
+
+.rider-detail-row {
+    display: grid;
+    grid-template-columns: minmax(0, 140px) minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eef1ef;
+}
+
+.rider-detail-row:last-child {
+    border-bottom: none;
+}
+
+.rider-detail-row span {
+    font-size: 13px;
+    color: #6e7a75;
+    line-height: 1.5;
+}
+
+.rider-detail-row strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e2925;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+
+/* ==========================================
+   RIDER CONFIRMATION CARD
+   ========================================== */
+
+.rider-confirmation-card {
+    width: 100%;
+    min-width: 0;
+    margin-top: 24px;
+    padding: 22px;
+    border: 1px solid #d4e5da;
+    border-radius: 14px;
+    background: #f3f7f4;
+    box-sizing: border-box;
+}
+
+.rider-confirmation-heading {
+    margin-bottom: 18px;
+}
+
+.rider-confirmation-card h3 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #145740;
+    line-height: 1.4;
+}
+
+.rider-confirmation-card p {
+    margin: 0;
+    color: #6e7a75;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+
+/* CONFIRMATION FORM */
+
+#rider-confirmation-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+}
+
+.rider-note-label {
+    display: block;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.rider-note-label span {
+    font-weight: 400;
+    color: #6e7a75;
+}
+
+#rider-confirmation-form textarea {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 100px;
+    padding: 12px 14px;
+    margin: 0;
+    border: 1px solid #dce3de;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #1e2925;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+#rider-confirmation-form textarea:focus {
+    outline: none;
+    border-color: #145740;
+    box-shadow: 0 0 0 3px rgba(20, 87, 64, 0.10);
+}
+
+
+/* CENTERED PLAIN TEXT CONFIRMATION BUTTON */
+
+.rider-confirmation-card .rider-confirm-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 50px;
+    height: auto;
+    padding: 14px 18px;
+    margin: 4px 0 0;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: #145740;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background-color 0.2s ease;
+}
+
+.rider-confirmation-card .rider-confirm-btn:hover {
+    background: #104633;
+}
+
+.rider-confirmation-card .rider-confirm-btn:focus-visible {
+    outline: 3px solid rgba(20, 87, 64, 0.25);
+    outline-offset: 3px;
+}
+
+.rider-confirmation-card .rider-confirm-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* ==========================================
+   DISPATCH STATUS AND GPS MAP
+   ========================================== */
+
+.rider-coordinate-text {
+    margin: 12px 0 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.rider-dispatch-card .rider-request-map {
+    display: block;
+    width: 100%;
+    height: 300px;
+    min-height: 220px;
+    border: 1px solid #e6e8e4;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #e6ebe7;
+    z-index: 0;
+}
+
+.rider-landmark {
+    margin-top: 18px;
+    padding: 14px;
+    border-radius: 10px;
+    background: #f5f7f5;
+}
+
+.rider-landmark strong {
+    font-size: 13px;
+    color: #145740;
+}
+
+.rider-landmark p {
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: #6e7a75;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+
+/* ==========================================
+   SERVICE COMPLETION
+   ========================================== */
+
+.rider-completion-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    text-align: center;
+    color: #145740;
+}
+
+.rider-completion-message h3 {
+    margin: 0;
+}
+
+.rider-completion-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: #145740;
+    color: #ffffff;
+}
+
+.rider-completion-icon svg {
+    width: 28px;
+    height: 28px;
+}
+
+
+/* SERVICE ACTIVITY HISTORY */
+
+.rider-activity-card {
+    margin-top: 20px;
+}
+
+.rider-activity-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px;
+}
+
+.rider-activity-item > div {
+    min-width: 0;
+}
+
+.rider-activity-item p {
+    margin: 6px 0 0;
+    overflow-wrap: anywhere;
+}
+
+
+/* ==========================================
+   PROFESSIONAL CONFIRMATION MODAL
+   ========================================== */
+
+.fixmoto-confirmation-modal {
+    position: fixed;
+    inset: 0;
+    width: calc(100% - 32px);
+    max-width: 420px;
+    max-height: calc(100% - 32px);
+    padding: 0;
+    margin: auto;
+    border: 1px solid #e1e7e3;
+    border-radius: 18px;
+    background: #ffffff;
+    color: #1e2925;
+    overflow: auto;
+    box-sizing: border-box;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+}
+
+.fixmoto-confirmation-modal:not([open]) {
+    display: none;
+}
+
+.fixmoto-confirmation-modal::backdrop {
+    background: rgba(12, 30, 24, 0.58);
+    backdrop-filter: blur(4px);
+}
+
+.fixmoto-confirmation-modal[open] {
+    animation: fixmotoModalEnter 0.2s ease-out;
+}
+
+.fixmoto-modal-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 26px 26px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+
+/* MODAL CLOSE BUTTON */
+
+.fixmoto-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #6e7a75;
+    font-size: 25px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.fixmoto-modal-close:hover {
+    background: #eef2ef;
+    color: #145740;
+}
+
+
+/* MODAL ICON */
+
+.fixmoto-modal-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    margin-bottom: 18px;
+    border-radius: 50%;
+    background: #e7f1eb;
+    color: #145740;
+}
+
+.fixmoto-modal-icon svg {
+    width: 28px;
+    height: 28px;
+    stroke-width: 1.8;
+}
+
+
+/* MODAL TITLE AND DESCRIPTION */
+
+.fixmoto-modal-content h3 {
+    margin: 0 0 12px;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #1e2925;
+}
+
+.fixmoto-modal-content p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #6e7a75;
+}
+
+
+/* MODAL BUTTON ALIGNMENT */
+
+.fixmoto-modal-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: 100%;
+    margin-top: 24px;
+}
+
+.fixmoto-modal-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding: 12px 16px;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: center;
+    white-space: normal;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background-color 0.2s ease;
+}
+
+
+/* CANCEL BUTTON */
+
+.fixmoto-modal-btn.cancel-btn {
+    background: #ffffff;
+    border: 1px solid #d6dfd9;
+    color: #34483d;
+}
+
+.fixmoto-modal-btn.cancel-btn:hover {
+    background: #f0f4f1;
+}
+
+
+/* CONFIRM BUTTON */
+
+.fixmoto-modal-btn.confirm-btn {
+    background: #145740;
+    border: 1px solid #145740;
+    color: #ffffff;
+}
+
+.fixmoto-modal-btn.confirm-btn:hover {
+    background: #104633;
+}
+
+.fixmoto-modal-btn:focus-visible,
+.fixmoto-modal-close:focus-visible {
+    outline: 3px solid rgba(20, 87, 64, 0.25);
+    outline-offset: 3px;
+}
+
+.fixmoto-modal-btn:disabled,
+.fixmoto-modal-close:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* MODAL ANIMATION */
+
+@keyframes fixmotoModalEnter {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* ==========================================
+   RESPONSIVE TABLET DESIGN
+   ========================================== */
+
+@media (max-width: 1100px) {
+
+    .rider-tracking-page .rider-tracking-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+}
+
+@media (max-width: 900px) {
+
+    .rider-request-card {
+        grid-column: 1 / -1;
+    }
+
+    .service-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    .rider-tracking-page .rider-progress-card,
+    .rider-tracking-page .rider-dispatch-card {
+        padding: 18px;
+    }
+
+    .rider-progress-header {
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .rider-tracking-page .rider-progress-header h2 {
+        font-size: 18px;
+    }
+
+    .rider-progress-header p {
+        font-size: 13px;
+    }
+
+    .rider-confirmation-card {
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .rider-confirmation-card h3 {
+        font-size: 16px;
+    }
+
+    .rider-confirmation-card .rider-confirm-btn {
+        min-height: 48px;
+        padding: 12px 14px;
+        font-size: 13px;
+    }
+
+    .rider-detail-row {
+        grid-template-columns: minmax(0, 110px) minmax(0, 1fr);
+    }
+
+    .rider-dispatch-card .rider-request-map {
+        height: 260px;
+    }
+
+    .rider-timeline-content strong {
+        font-size: 14px;
+    }
+
+    .fixmoto-modal-content {
+        padding: 28px 20px 20px;
+    }
+
+}
+
+
+/* ==========================================
+   RESPONSIVE MOBILE DESIGN
+   ========================================== */
+
+@media (max-width: 560px) {
+
+    .rider-breadcrumb {
+        margin-bottom: 14px;
+        font-size: 11px;
+    }
+
+    .rider-vehicle-item {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .rider-vehicle-plate {
+        width: 100%;
+        padding-left: 57px;
+    }
+
+    .rider-form-wide {
+        grid-column: auto;
+    }
+
+    .history-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .request-stepper {
+        gap: 4px;
+    }
+
+    .stepper-step {
+        gap: 4px;
+        flex-direction: column;
+        text-align: center;
+        flex: 1;
+    }
+
+    .stepper-step b {
+        font-size: 9px;
+        white-space: normal;
+        line-height: 1.2;
+    }
+
+    .request-stepper > i {
+        flex: none;
+        width: 9px;
+        margin-top: -17px;
+    }
+
+    .service-options {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .service-option {
+        min-height: 54px;
+        padding: 9px 11px;
+    }
+
+    .service-option-label {
+        font-size: 13px;
+    }
+
+    .request-location-map {
+        height: 195px;
+    }
+
+    .wizard-actions .btn {
+        font-size: 12px;
+        padding: 10px 12px;
+    }
+
+    .rider-service-timeline {
+        gap: 8px;
+    }
+
+    .rider-timeline-icon {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+    }
+
+    .rider-timeline-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .fixmoto-modal-actions {
+        gap: 10px;
+    }
+
+}
+
+@media (max-width: 380px) {
+
+    .rider-detail-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 4px;
+    }
+
+    .rider-tracking-page .rider-progress-card,
+    .rider-tracking-page .rider-dispatch-card {
+        padding: 14px;
+    }
+
+    .fixmoto-modal-btn {
+        font-size: 13px;
+        padding: 10px;
+    }
+
+    .rider-confirmation-card {
+        padding: 14px;
+    }
+
+}
+
+
+/* ACCESSIBILITY */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .fixmoto-confirmation-modal[open] {
+        animation: none;
+    }
+
+    .rider-confirm-btn,
+    .fixmoto-modal-btn,
+    .service-option {
+        transition: none;
+    }
+
+}

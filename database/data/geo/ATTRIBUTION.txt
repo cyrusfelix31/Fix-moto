@@ -1,0 +1,4 @@
+Barangay and city boundaries are derived from faeldon/philippines-json-maps
+(PSGC 3Q 2026), built from PSA PSGC and NAMRIA source shapefiles.
+Source: https://github.com/faeldon/philippines-json-maps
+The source repository is MIT licensed; Copyright (c) James Faeldon.
