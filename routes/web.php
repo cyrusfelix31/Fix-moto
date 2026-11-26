@@ -4,16 +4,26 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MechanicController;
 use App\Http\Controllers\RiderController;
+use App\Http\Controllers\LocationController;
+use App\Http\Controllers\ShopVerificationController;
+use App\Http\Middleware\EnsureMechanicVerified;
 use Illuminate\Support\Facades\Route;
 
-// Home
 Route::get('/', function () {
+
     return auth()->check()
-        ? redirect()->route(auth()->user()->role.'.dashboard')
+
+        ? redirect()->route(
+            auth()->user()->role.'.dashboard'
+        )
+
         : redirect()->route('login');
+
 })->name('home');
 
-// Authentication
+
+// AUTHENTICATION
+
 Route::middleware('guest')->group(function () {
 
     Route::get('/login', [
@@ -31,6 +41,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [
         AuthController::class, 'register'
     ]);
+
 });
 
 Route::post('/logout', [
@@ -38,10 +49,57 @@ Route::post('/logout', [
 ])->middleware('auth')->name('logout');
 
 
+// LOCATION SEARCH AND GPS
+
+Route::middleware('throttle:60,1')->group(function () {
+
+    Route::get('/locations/search', [
+        LocationController::class, 'search'
+    ])->name('locations.search');
+
+    Route::get('/locations/reverse', [
+        LocationController::class, 'reverse'
+    ])->name('locations.reverse');
+
+});
+
+
+// MECHANIC VERIFICATION STATUS
+
+Route::middleware(['auth', 'role:mechanic'])
+
+    ->prefix('mechanic')
+
+    ->name('mechanic.')
+
+    ->group(function () {
+
+        Route::get('/verification-status', [
+
+            ShopVerificationController::class,
+            'status'
+
+        ])->name('verification.status');
+
+        Route::post('/verification-resubmit', [
+
+            ShopVerificationController::class,
+            'resubmit'
+
+        ])->middleware('throttle:5,1')
+          ->name('verification.resubmit');
+
+    });
+
+
 // RIDER ROUTES
+
 Route::middleware(['auth', 'role:rider'])
+
     ->prefix('rider')
+
     ->name('rider.')
+
     ->group(function () {
 
         Route::get('/dashboard', [
@@ -72,17 +130,25 @@ Route::middleware(['auth', 'role:rider'])
             RiderController::class, 'showRequest'
         ])->name('requests.show');
 
-        // Rider confirms arrival, repair and completion
         Route::post('/requests/{serviceRequest}/status', [
             RiderController::class, 'updateStatus'
         ])->name('requests.status');
+
     });
 
 
-// MECHANIC ROUTES
-Route::middleware(['auth', 'role:mechanic'])
+// VERIFIED MECHANIC ROUTES
+
+Route::middleware([
+    'auth',
+    'role:mechanic',
+    EnsureMechanicVerified::class
+])
+
     ->prefix('mechanic')
+
     ->name('mechanic.')
+
     ->group(function () {
 
         Route::get('/dashboard', [
@@ -129,17 +195,21 @@ Route::middleware(['auth', 'role:mechanic'])
             MechanicController::class, 'assignMechanic'
         ])->name('requests.assign');
 
-        // Mechanic can only mark On the Way
         Route::post('/requests/{serviceRequest}/status', [
             MechanicController::class, 'updateStatus'
         ])->name('requests.status');
+
     });
 
 
 // ADMIN ROUTES
+
 Route::middleware(['auth', 'role:admin'])
+
     ->prefix('admin')
+
     ->name('admin.')
+
     ->group(function () {
 
         Route::get('/dashboard', [
@@ -157,10 +227,6 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/users-mechanics', [
             AdminController::class, 'usersMechanics'
         ])->name('users-mechanics');
-
-        Route::get('/verification', [
-            AdminController::class, 'verification'
-        ])->name('verification');
 
         Route::get('/monitoring', [
             AdminController::class, 'monitoring'
@@ -182,11 +248,50 @@ Route::middleware(['auth', 'role:admin'])
             AdminController::class, 'updateSystemStatus'
         ])->name('system-status.update');
 
-        Route::post('/mechanics/{user}/verify', [
-            AdminController::class, 'verifyMechanic'
-        ])->name('mechanics.verify');
-
         Route::post('/users/{user}/suspend', [
             AdminController::class, 'toggleSuspension'
         ])->name('users.suspend');
+
+
+        // VERIFICATION MANAGEMENT
+
+        Route::get('/verification', [
+
+            ShopVerificationController::class,
+            'index'
+
+        ])->name('verification');
+
+
+        Route::get('/verification/{user}', [
+
+            ShopVerificationController::class,
+            'show'
+
+        ])->name('verification.show');
+
+
+        Route::get('/documents/{document}', [
+
+            ShopVerificationController::class,
+            'viewDocument'
+
+        ])->name('documents.view');
+
+
+        Route::post('/documents/{document}/review', [
+
+            ShopVerificationController::class,
+            'reviewDocument'
+
+        ])->name('documents.review');
+
+
+        Route::post('/mechanics/{user}/verify', [
+
+            ShopVerificationController::class,
+            'decide'
+
+        ])->name('mechanics.verify');
+
     });

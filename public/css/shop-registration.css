@@ -1,0 +1,796 @@
+/* ==========================================
+   FIXMOTO COMPLETE REGISTRATION DESIGN
+   ========================================== */
+
+.fixmoto-registration.auth-card.wide {
+    width: 100%;
+    max-width: 780px;
+    padding: 32px;
+    background: #fff;
+    border: 1px solid #e0e6e1;
+    border-radius: 20px;
+    box-sizing: border-box;
+}
+
+/* FIX MECHANIC FIELD VISIBILITY */
+
+.fixmoto-registration .mechanic-fields:not([hidden]) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.fixmoto-registration [hidden] {
+    display: none !important;
+}
+
+.fixmoto-registration * {
+    box-sizing: border-box;
+}
+
+.fixmoto-registration form {
+    display: grid;
+    gap: 20px;
+}
+
+/* ACCOUNT ROLE SELECTION */
+
+.fixmoto-registration .role-picker {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.fixmoto-registration .role-picker label {
+    cursor: pointer;
+}
+
+.fixmoto-registration .role-picker input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.fixmoto-registration .role-picker span {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 120px;
+    padding: 16px;
+    border: 1px solid #dce3de;
+    border-radius: 12px;
+    background: #fff;
+    text-align: center;
+}
+
+.fixmoto-registration .role-picker input:checked + span {
+    background: #edf5ef;
+    border-color: #145740;
+    box-shadow: 0 0 0 1px #145740;
+}
+
+.fixmoto-registration .role-picker input:focus-visible + span {
+    outline: 3px solid #8fbb9e;
+}
+
+.fixmoto-registration .role-picker svg {
+    width: 25px;
+    height: 25px;
+    color: #145740;
+}
+
+.fixmoto-registration .role-picker strong {
+    font-size: 14px;
+}
+
+.fixmoto-registration .role-picker small {
+    font-size: 12px;
+    color: #687c73;
+}
+
+/* REGISTRATION SECTIONS */
+
+.fixmoto-registration .registration-section {
+    width: 100%;
+    min-width: 0;
+    padding: 22px;
+    margin: 0;
+    border: 1px solid #e0e6e1;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.fixmoto-registration .registration-section-header {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding-bottom: 17px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #edf0ed;
+}
+
+.registration-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 11px;
+    background: #e7f1eb;
+    color: #145740;
+}
+
+.registration-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.registration-section-header h3 {
+    margin: 0;
+    color: #18352a;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.registration-section-header p {
+    margin: 5px 0 0;
+    color: #687c73;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* FORM FIELDS */
+
+.registration-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 17px;
+}
+
+.registration-full {
+    grid-column: 1 / -1;
+}
+
+.fixmoto-registration .registration-grid label,
+.registration-mechanic-row label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #1e2925;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.registration-grid input:not([type="hidden"]),
+.registration-mechanic-row input {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 12px 14px;
+    margin: 0;
+    border: 1px solid #dce3de;
+    border-radius: 9px;
+    background: #fff;
+    color: #1e2925;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.registration-grid input[type="hidden"] {
+    display: none;
+}
+
+.registration-grid input:focus,
+.registration-mechanic-row input:focus {
+    outline: none;
+    border-color: #145740;
+    box-shadow: 0 0 0 3px rgba(20, 87, 64, .10);
+}
+
+/* SHOP ADDRESS AND GPS ICON */
+
+.shop-address-section {
+    grid-column: 1 / -1;
+    min-width: 0;
+}
+
+.shop-address-wrapper {
+    position: relative;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.shop-address-input-group {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 48px;
+    gap: 9px;
+    align-items: stretch;
+    width: 100%;
+}
+
+.shop-address-input-group input {
+    width: 100%;
+    min-width: 0;
+    height: 48px;
+    margin: 0;
+}
+
+.shop-gps-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 9px;
+    background: #145740;
+    color: #fff;
+    cursor: pointer;
+    transition: background .2s ease;
+}
+
+.shop-gps-button:hover {
+    background: #104633;
+}
+
+.shop-gps-button svg {
+    width: 23px;
+    height: 23px;
+}
+
+.address-hint {
+    display: block;
+    margin-top: 9px;
+    color: #687c73;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.fixmoto-registration .shop-location-status {
+    display: block;
+    min-height: 0;
+    padding: 0;
+    margin: 9px 0 0;
+    border: 0;
+    color: #687c73;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.location-confirmed {
+    color: #145740 !important;
+    font-weight: 600;
+}
+
+.location-error {
+    color: #b91c1c !important;
+}
+
+/* ADDRESS AUTOCOMPLETE DROPDOWN */
+
+.address-suggestions {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #dce3de;
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .12);
+}
+
+.address-suggestions[hidden] {
+    display: none !important;
+}
+
+.address-suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px;
+    margin: 0;
+    border: 0;
+    border-bottom: 1px solid #edf0ed;
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+}
+
+.address-suggestion-item:last-child {
+    border-bottom: 0;
+}
+
+.address-suggestion-item:hover,
+.address-suggestion-item:focus-visible {
+    background: #edf5f0;
+}
+
+.address-suggestion-item svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: #145740;
+}
+
+.address-suggestion-item span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 4px;
+}
+
+.address-suggestion-item strong {
+    color: #1e2925;
+    font-size: 13px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.address-suggestion-item small {
+    color: #687c73;
+    font-size: 11px;
+}
+
+.address-empty-message {
+    padding: 15px;
+    margin: 0;
+    color: #687c73;
+    font-size: 13px;
+}
+
+/* BUSINESS DOCUMENT UPLOADS */
+
+.fixmoto-registration .document-upload-card {
+    padding: 0 0 22px;
+    margin: 0 0 22px;
+    border: 0;
+    border-bottom: 1px solid #e0e6e1;
+    border-radius: 0;
+    background: transparent;
+}
+
+.fixmoto-registration .document-upload-card:last-of-type {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.document-upload-card h4 {
+    margin: 0 0 15px;
+    color: #1e2925;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.fixmoto-registration .document-dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 140px;
+    padding: 22px;
+    border: 1px dashed #b8cbbf;
+    border-radius: 12px;
+    background: #f9fcfa;
+    text-align: center;
+    cursor: pointer;
+    transition: background .2s, border-color .2s;
+}
+
+.fixmoto-registration .document-dropzone:hover {
+    background: #edf5f0;
+    border-color: #145740;
+}
+
+.document-dropzone svg {
+    width: 27px;
+    height: 27px;
+    color: #145740;
+}
+
+.document-dropzone strong {
+    color: #145740;
+    font-size: 15px;
+}
+
+.document-dropzone small {
+    color: #687c73;
+    font-size: 12px;
+}
+
+.fixmoto-registration .document-dropzone input[type="file"] {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding: 10px;
+    border: 0;
+    background: transparent;
+    color: #687c73;
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.document-dropzone input[type="file"]::file-selector-button {
+    padding: 9px 14px;
+    margin-right: 8px;
+    border: 0;
+    border-radius: 7px;
+    background: #145740;
+    color: #fff;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.document-upload-card .file-status {
+    margin: 9px 0 0;
+    color: #145740;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.document-upload-card .file-status.error {
+    color: #b91c1c;
+}
+
+/* EXPIRATION DATE */
+
+.fixmoto-registration .document-expiration {
+    display: grid;
+    gap: 8px;
+    margin-top: 15px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.fixmoto-registration .document-expiration input {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px;
+    border: 1px solid #dce3de;
+    border-radius: 9px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.document-expiration input:focus {
+    outline: none;
+    border-color: #145740;
+    box-shadow: 0 0 0 3px rgba(20, 87, 64, .10);
+}
+
+/* MECHANIC TEAM */
+
+.mechanic-roster-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.mechanic-roster-heading strong {
+    font-size: 13px;
+}
+
+.mechanic-roster-heading span {
+    padding: 6px 10px;
+    border-radius: 20px;
+    background: #edf5f0;
+    color: #145740;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+#mechanic-roster-fields {
+    display: grid;
+    gap: 12px;
+}
+
+.registration-mechanic-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.registration-mechanic-row label {
+    flex: 1;
+    min-width: 0;
+}
+
+.registration-mechanic-row .btn {
+    min-height: 48px;
+    flex-shrink: 0;
+}
+
+.add-mechanic-button {
+    margin-top: 15px;
+}
+
+/* REGISTER BUTTON */
+
+.fixmoto-registration .registration-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 50px;
+    padding: 13px 20px;
+    margin-top: 4px;
+    border: 0;
+    border-radius: 10px;
+    background: #145740;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+}
+
+.fixmoto-registration .registration-submit:hover {
+    background: #104633;
+}
+
+/* VALIDATION ERRORS */
+
+.fixmoto-registration .alert.error {
+    margin: 15px 0;
+    padding: 14px;
+    border-radius: 9px;
+    background: #fdecec;
+    color: #b91c1c;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* GPS MAP MODAL */
+
+.shop-map-modal {
+    position: fixed;
+    inset: 0;
+    width: calc(100% - 32px);
+    max-width: 720px;
+    max-height: calc(100dvh - 32px);
+    padding: 0;
+    margin: auto;
+    overflow: auto;
+    border: 1px solid #dce3de;
+    border-radius: 18px;
+    background: #fff;
+    color: #1e2925;
+    box-sizing: border-box;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .24);
+}
+
+.shop-map-modal:not([open]) {
+    display: none;
+}
+
+.shop-map-modal::backdrop {
+    background: rgba(12, 30, 24, .60);
+    backdrop-filter: blur(4px);
+}
+
+.shop-map-modal-content {
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.shop-map-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.shop-map-modal-header h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.shop-map-modal-header p {
+    margin: 6px 0 0;
+    color: #687c73;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.shop-map-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: #f0f4f1;
+    color: #145740;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+/* LEAFLET GPS MAP */
+
+.shop-picker-map {
+    display: block;
+    width: 100%;
+    height: 340px;
+    min-height: 240px;
+    overflow: hidden;
+    border: 1px solid #dce3de;
+    border-radius: 12px;
+    background: #e6ebe7;
+    z-index: 0;
+}
+
+/* SELECTED LOCATION DETAILS */
+
+.selected-location-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    margin-top: 16px;
+    border: 1px solid #d4e5da;
+    border-radius: 12px;
+    background: #f3f7f4;
+}
+
+.selected-location-details small {
+    display: block;
+    color: #687c73;
+    font-size: 12px;
+}
+
+.selected-location-details strong {
+    display: block;
+    margin-top: 4px;
+    color: #145740;
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.shop-coordinate-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.shop-coordinate-grid > div {
+    padding: 11px;
+    border-radius: 9px;
+    background: #fff;
+}
+
+.shop-map-message {
+    margin: 14px 0;
+    color: #687c73;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* GPS MODAL BUTTONS */
+
+.shop-map-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.shop-map-actions .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 12px 16px;
+    margin: 0;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.shop-map-actions .primary {
+    background: #145740;
+    color: #fff;
+}
+
+.shop-map-actions .outline {
+    border: 1px solid #d6dfd9;
+    background: #fff;
+    color: #145740;
+}
+
+.shop-map-actions .btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+/* MOBILE RESPONSIVE DESIGN */
+
+@media (max-width: 600px) {
+
+    .fixmoto-registration.auth-card.wide {
+        padding: 18px;
+    }
+
+    .fixmoto-registration .registration-section {
+        padding: 16px;
+    }
+
+    .registration-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .registration-section-header h3 {
+        font-size: 16px;
+    }
+
+    .registration-section-header p {
+        font-size: 12px;
+    }
+
+    .shop-address-input-group {
+        grid-template-columns: minmax(0, 1fr) 44px;
+        gap: 7px;
+    }
+
+    .shop-gps-button {
+        width: 44px;
+    }
+
+    .shop-map-modal-content {
+        padding: 16px;
+    }
+
+    .shop-picker-map {
+        height: 260px;
+    }
+
+    .shop-map-actions .btn {
+        font-size: 12px;
+        padding: 12px 8px;
+    }
+
+    .registration-mechanic-row {
+        flex-wrap: wrap;
+    }
+
+    .fixmoto-registration .document-dropzone {
+        min-height: 130px;
+        padding: 15px;
+    }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .fixmoto-registration *,
+    .shop-map-modal * {
+        transition: none !important;
+    }
+
+}

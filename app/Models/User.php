@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -13,18 +12,23 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'phone'])]
-#[Hidden(['password', 'remember_token'])]
+#[Fillable([
+    'name',
+    'email',
+    'password',
+    'role',
+    'phone'
+])]
+
+#[Hidden([
+    'password',
+    'remember_token'
+])]
+
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -47,23 +51,46 @@ class User extends Authenticatable
 
     public function riderRequests(): HasMany
     {
-        return $this->hasMany(ServiceRequest::class, 'rider_id');
+        return $this->hasMany(
+            ServiceRequest::class,
+            'rider_id'
+        );
     }
 
     public function assignedRequests(): HasMany
     {
-        return $this->hasMany(ServiceRequest::class, 'mechanic_id');
+        return $this->hasMany(
+            ServiceRequest::class,
+            'mechanic_id'
+        );
     }
 
     public function mechanicVerifications(): HasMany
     {
-        return $this->hasMany(MechanicVerification::class, 'mechanic_id');
+        return $this->hasMany(
+            MechanicVerification::class,
+            'mechanic_id'
+        );
     }
 
-    public function scopePendingVerification(Builder $query): void
+    public function scopePendingVerification(
+        Builder $query
+    ): void
     {
         $query->where('role', 'mechanic')
-            ->whereHas('mechanicProfile', fn (Builder $profile) => $profile->where('is_verified', false))
-            ->whereDoesntHave('mechanicVerifications', fn (Builder $verification) => $verification->whereIn('status', ['approved', 'rejected']));
+
+            ->whereHas(
+                'mechanicProfile',
+                function (Builder $profile) {
+
+                    $profile
+                        ->where('is_verified', false)
+                        ->where(
+                            'verification_status',
+                            'pending'
+                        );
+
+                }
+            );
     }
 }

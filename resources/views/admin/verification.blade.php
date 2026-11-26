@@ -1,66 +1,231 @@
-@extends('admin.layouts.app')
-@section('title','Mechanic Shop Verification')
-@section('page_title','Verification')
+@extends('admin.layouts.admin')
+@section('title', 'Shop Verification - FIXMOTO')
+@section('page_title', 'Mechanic Shop Verification')
+
 @section('content')
-<div class="admin-page">
-    <div class="admin-page-header"><div><p class="live-kicker">MECHANIC SHOP APPLICATIONS</p><h1>Shop verification</h1><p>Approve or reject mechanic shop applications.</p></div></div>
-    <section class="distribution-card" style="height:auto">
-        <h2>Pending applications</h2>
-        <div style="margin-top:14px">
-            @forelse($pending as $shop)
-                <div class="attention-item" style="grid-template-columns:38px minmax(0,1fr)">
-                    <span class="attention-icon green"><i data-lucide="badge-check"></i></span>
-                    <div style="min-width:0">
-                        <strong>{{ $shop->mechanicProfile->shop_name }}</strong>
-                        <p>{{ $shop->name }}</p>
-                        <small>{{ $shop->mechanicProfile->service_address }} · {{ $shop->mechanicProfile->members->where('is_active', true)->count() }} active mechanic(s)</small>
-                        <h3 style="margin:12px 0 0;font-size:13px">Verification Checklist</h3>
-                        <div class="table-wrap">
-                            <table aria-label="Verification checklist for {{ $shop->mechanicProfile->shop_name }}">
-                                <thead><tr><th>Verification Item</th><th>Status</th></tr></thead>
-                                <tbody>
-                                    <tr><td>Valid Business Permit</td><td><span class="badge">Verified</span></td></tr>
-                                    <tr><td>Owner's Valid ID</td><td><span class="badge">Verified</span></td></tr>
-                                    <tr><td>Physical Shop Location</td><td><span class="badge">Verified</span></td></tr>
-                                    <tr><td>Contact Number</td><td><span class="badge">Verified</span></td></tr>
-                                    <tr><td>Shop Operations</td><td><span class="badge">Verified</span></td></tr>
-                                    <tr><td>Mechanic Credentials</td><td><span class="badge">Verified</span></td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <form method="POST" action="{{ route('admin.mechanics.verify',$shop) }}" class="form-grid verification-form" style="grid-column:2;grid-template-columns:100px minmax(0,1fr) auto">
-                        @csrf
-                        <select name="decision" class="verification-decision"><option value="approve">Approve</option><option value="reject">Reject</option></select>
-                        <input name="reason" class="verification-reason" placeholder="Reason if rejecting">
-                        <button class="btn primary">Submit</button>
-                    </form>
-                </div>
-            @empty
-                <div class="admin-empty compact">No pending applications.</div>
-            @endforelse
+
+<link rel="stylesheet"
+      href="{{ asset('css/shop-verification.css') }}">
+
+<section class="shop-verification-panel">
+
+    <div class="verification-heading">
+
+        <h2>Mechanic Shop Verification</h2>
+
+        <p>Review and manage mechanic shop applications.</p>
+
+    </div>
+
+    @if($errors->any())
+
+        <div class="verification-alert error">
+
+            @foreach($errors->all() as $error)
+                <p>{{ $error }}</p>
+            @endforeach
+
         </div>
-    </section>
-    <section class="distribution-card" style="height:auto;margin-top:17px">
-        <div class="distribution-header"><div><p>REVIEW RECORDS</p><h2>Verification history</h2></div></div>
-        <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Mechanic shop</th><th>Decision</th><th>Reason</th><th>Reviewed by</th><th>Date</th></tr></thead><tbody>
-            @forelse($history as $record)
-                <tr><td>{{ $record->mechanic?->mechanicProfile?->shop_name ?? $record->mechanic?->name ?? 'Mechanic shop removed' }}</td><td><span class="badge {{ $record->status === 'rejected' ? 'red' : '' }}">{{ ucfirst($record->status) }}</span></td><td>{{ $record->rejection_reason ?: '—' }}</td><td>{{ $record->reviewedBy?->name ?: '—' }}</td><td>{{ $record->reviewed_at?->format('Y-m-d H:i') ?: '—' }}</td></tr>
-            @empty
-                <tr><td colspan="5" class="muted">No verification decisions recorded.</td></tr>
-            @endforelse
-        </tbody></table></div>
-    </section>
-</div>
-<script>
-document.querySelectorAll('.verification-form').forEach((form) => {
-    const decision = form.querySelector('.verification-decision');
-    const reason = form.querySelector('.verification-reason');
-    const syncReasonRequirement = () => {
-        reason.required = decision.value === 'reject';
-    };
-    decision.addEventListener('change', syncReasonRequirement);
-    syncReasonRequirement();
-});
-</script>
+
+    @endif
+
+
+    {{-- SUMMARY CARDS --}}
+
+    <div class="verification-stat-grid">
+
+        <div class="verification-stat">
+
+            <div class="stat-icon pending">
+                <i data-lucide="clock"></i>
+            </div>
+
+            <span>Pending</span>
+
+            <strong>{{ $counts['pending'] }}</strong>
+
+        </div>
+
+        <div class="verification-stat">
+
+            <div class="stat-icon approved">
+                <i data-lucide="check-circle"></i>
+            </div>
+
+            <span>Approved</span>
+
+            <strong>{{ $counts['approved'] }}</strong>
+
+        </div>
+
+        <div class="verification-stat">
+
+            <div class="stat-icon rejected">
+                <i data-lucide="x-circle"></i>
+            </div>
+
+            <span>Rejected</span>
+
+            <strong>{{ $counts['rejected'] }}</strong>
+
+        </div>
+
+    </div>
+
+
+    {{-- VERIFICATION TABLE --}}
+
+    <div class="verification-table-wrapper">
+
+        <table class="verification-table">
+
+            <thead>
+
+                <tr>
+                    <th>Shop Name</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @forelse($shops as $shop)
+
+                    @php
+                        $profile = $shop->mechanicProfile;
+                        $status = $profile->verification_status;
+                    @endphp
+
+                    <tr>
+
+                        <td>
+
+                            <strong>
+
+                                {{ $profile->shop_name }}
+
+                            </strong>
+
+                            <small>
+
+                                SHOP-{{ str_pad(
+                                    $profile->id,
+                                    4,
+                                    '0',
+                                    STR_PAD_LEFT
+                                ) }}
+
+                            </small>
+
+                        </td>
+
+                        <td>
+
+                            <span class="verification-badge {{ $status }}">
+
+                                {{ ucfirst($status) }}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            {{ $shop->created_at->format('M d, Y') }}
+
+                        </td>
+
+                        <td>
+
+                            <details class="verification-action-menu">
+
+                                <summary aria-label="Application actions">
+
+                                    <i data-lucide="ellipsis-vertical"></i>
+
+                                </summary>
+
+                                <div class="verification-dropdown">
+
+                                    <a href="{{ route(
+                                        'admin.verification.show',
+                                        $shop
+                                    ) }}">
+
+                                        <i data-lucide="eye"></i>
+
+                                        View
+
+                                    </a>
+
+                                    @if($status === 'pending')
+
+                                        <button type="button"
+                                                class="approve-action"
+                                                data-review-url="{{ route(
+                                                    'admin.mechanics.verify',
+                                                    $shop
+                                                ) }}"
+                                                data-decision="approve"
+                                                data-review-label="{{ $profile->shop_name }}">
+
+                                            <i data-lucide="check-circle"></i>
+
+                                            Approve
+
+                                        </button>
+
+                                        <button type="button"
+                                                class="reject-action"
+                                                data-review-url="{{ route(
+                                                    'admin.mechanics.verify',
+                                                    $shop
+                                                ) }}"
+                                                data-decision="reject"
+                                                data-review-label="{{ $profile->shop_name }}">
+
+                                            <i data-lucide="x-circle"></i>
+
+                                            Reject
+
+                                        </button>
+
+                                    @endif
+
+                                </div>
+
+                            </details>
+
+                        </td>
+
+                    </tr>
+
+                @empty
+
+                    <tr>
+
+                        <td colspan="4"
+                            class="verification-empty">
+
+                            No mechanic shop applications found.
+
+                        </td>
+
+                    </tr>
+
+                @endforelse
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+@include('admin.verification-modal')
+
 @endsection

@@ -10,12 +10,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MechanicProfile extends Model
 {
-    /** @use HasFactory<MechanicProfileFactory> */
     use HasFactory;
 
     protected $fillable = [
         'user_id',
         'shop_name',
+        'shop_phone',
         'service_address',
         'barangay',
         'barangay_id',
@@ -26,11 +26,18 @@ class MechanicProfile extends Model
         'longitude',
         'is_verified',
         'is_online',
+        'verification_status',
     ];
 
     protected function casts(): array
     {
-        return ['services' => 'array', 'is_verified' => 'boolean', 'is_online' => 'boolean', 'latitude' => 'decimal:7', 'longitude' => 'decimal:7'];
+        return [
+            'services' => 'array',
+            'is_verified' => 'boolean',
+            'is_online' => 'boolean',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
+        ];
     }
 
     public function members(): HasMany
@@ -43,25 +50,82 @@ class MechanicProfile extends Model
         return $this->members()->where('is_active', true);
     }
 
-    public function distanceTo(float $latitude, float $longitude): float
+    public function documents(): HasMany
     {
-        $earthRadius = 6371;
-        $latitudeDifference = deg2rad($latitude - (float) $this->latitude);
-        $longitudeDifference = deg2rad($longitude - (float) $this->longitude);
-        $distance = sin($latitudeDifference / 2) ** 2
-            + cos(deg2rad((float) $this->latitude)) * cos(deg2rad($latitude))
-            * sin($longitudeDifference / 2) ** 2;
-
-        return $earthRadius * 2 * atan2(sqrt($distance), sqrt(1 - $distance));
+        return $this->hasMany(MechanicDocument::class);
     }
 
     public function mechanic(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(
+            User::class,
+            'user_id'
+        );
     }
 
     public function barangay(): BelongsTo
     {
         return $this->belongsTo(Barangay::class);
+    }
+
+    public function allDocumentsApproved(): bool
+    {
+        $documents = $this->documents()
+            ->get()
+            ->keyBy('document_type');
+
+        foreach (MechanicDocument::TYPES as $type => $label) {
+
+            $document = $documents->get($type);
+
+            if (!$document || $document->status !== 'approved') {
+                return false;
+            }
+
+            if (
+                in_array($type, [
+                    'business_permit',
+                    'mayors_permit'
+                ], true)
+                && !$document->expiration_date
+            ) {
+                return false;
+            }
+
+            if ($document->isExpired()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function distanceTo(
+        float $latitude,
+        float $longitude
+    ): float
+    {
+        $earthRadius = 6371;
+
+        $latitudeDifference = deg2rad(
+            $latitude - (float) $this->latitude
+        );
+
+        $longitudeDifference = deg2rad(
+            $longitude - (float) $this->longitude
+        );
+
+        $distance = sin($latitudeDifference / 2) ** 2
+
+            + cos(deg2rad((float) $this->latitude))
+
+            * cos(deg2rad($latitude))
+
+            * sin($longitudeDifference / 2) ** 2;
+
+        return $earthRadius * 2 * atan2(
+            sqrt($distance),
+            sqrt(max(0, 1 - $distance))
+        );
     }
 }

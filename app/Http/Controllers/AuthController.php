@@ -6,12 +6,14 @@ use App\Models\AuditLog;
 use App\Models\MechanicProfile;
 use App\Models\User;
 use App\Services\BarangayLocator;
+use App\Services\ShopDocumentService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -20,28 +22,67 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function showRegister(BarangayLocator $locator): View
+    public function showRegister(
+        BarangayLocator $locator
+    ): View
     {
         return view('auth.register', [
-            'cityBoundary' => $locator->cityFeature()
+            'cityBoundary' => $locator->cityFeature(),
         ]);
     }
 
-    public function register(Request $request, BarangayLocator $locator)
-    {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['nullable', 'string', 'max:32'],
-            'password' => ['required', 'confirmed', 'min:8'],
-            'role' => ['required', 'in:rider,mechanic'],
+    public function register(
+        Request $request,
+        BarangayLocator $locator,
+        ShopDocumentService $documentService
+    ) {
 
-            // Mechanic shop registration only
+        $data = $request->validate([
+
+            'name' => [
+                'required',
+                'string',
+                'max:255'
+            ],
+
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email'
+            ],
+
+            'phone' => [
+                'nullable',
+                'required_if:role,mechanic',
+                'string',
+                'max:32'
+            ],
+
+            'password' => [
+                'required',
+                'string',
+                'confirmed',
+                'min:8'
+            ],
+
+            'role' => [
+                'required',
+                'in:rider,mechanic'
+            ],
+
             'shop_name' => [
                 'exclude_unless:role,mechanic',
                 'required',
                 'string',
                 'max:255'
+            ],
+
+            'shop_phone' => [
+                'exclude_unless:role,mechanic',
+                'required',
+                'string',
+                'max:32'
             ],
 
             'service_address' => [
@@ -85,74 +126,149 @@ class AuthController extends Controller
                 'string',
                 'max:255'
             ],
+
+            ...$documentService->rules(true),
+
         ]);
 
-        // Validate GPS location for mechanic shops only
         $locationMatch = null;
+        $documents = [];
 
         if ($data['role'] === 'mechanic') {
+
             $locationMatch = $locator->locate(
                 (float) $data['latitude'],
                 (float) $data['longitude']
             );
 
             if (!$locationMatch['within_city']) {
+
                 throw ValidationException::withMessages([
-                    'latitude' => 'Choose a shop location within Calapan City boundaries.',
+                    'latitude' =>
+                        'Choose a shop location within Calapan City boundaries.',
                 ]);
             }
+
+            $documents = $documentService->store(
+                $request
+            );
         }
 
-        // Create account
-        $user = DB::transaction(function () use ($data, $locationMatch): User {
+        try {
 
-            $user = User::create([
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'phone' => $data['phone'] ?? null,
-                'password' => Hash::make($data['password']),
-                'role' => $data['role'],
-            ]);
+            $user = DB::transaction(
+                function () use (
+                    $data,
+                    $locationMatch,
+                    $documents
+                ): User {
 
-            // Create mechanic profile only for mechanic accounts
-            if ($user->role === 'mechanic') {
+                    $user = User::create([
+                        'name' => $data['name'],
+                        'email' => $data['email'],
+                        'phone' => $data['phone'] ?? null,
+                        'password' => Hash::make(
+                            $data['password']
+                        ),
+                        'role' => $data['role'],
+                    ]);
 
-                $profile = MechanicProfile::create([
-                    'user_id' => $user->id,
-                    'shop_name' => $data['shop_name'],
-                    'service_address' => $data['service_address'],
-                    'barangay' => $locationMatch['barangay_name'],
-                    'barangay_id' => $locationMatch['barangay_id'],
-                    'barangay_match_status' => $locationMatch['status'],
-                    'latitude' => $data['latitude'],
-                    'longitude' => $data['longitude'],
-                    'services' => $data['services'] ?? [],
-                    'is_verified' => false,
-                    'is_online' => false,
-                ]);
+                    if ($user->role === 'mechanic') {
 
-                $profile->members()->createMany(
-                    $data['mechanics']
-                );
-            }
+                        $profile = MechanicProfile::create([
 
-            AuditLog::record(
-                $user,
-                'user.registered',
-                details: ['role' => $user->role]
+                            'user_id' => $user->id,
+
+                            'shop_name' =>
+                                $data['shop_name'],
+
+                            'shop_phone' =>
+                                $data['shop_phone'],
+
+                            'service_address' =>
+                                $data['service_address'],
+
+                            'barangay' =>
+                                $locationMatch['barangay_name'],
+
+                            'barangay_id' =>
+                                $locationMatch['barangay_id'],
+
+                            'barangay_match_status' =>
+                                $locationMatch['status'],
+
+                            'latitude' =>
+                                $data['latitude'],
+
+                            'longitude' =>
+                                $data['longitude'],
+
+                            'services' =>
+                                $data['services'] ?? [],
+
+                            'verification_status' => 'pending',
+
+                            'is_verified' => false,
+
+                            'is_online' => false,
+
+                        ]);
+
+                        $members = array_map(
+                            fn ($mechanic) => [
+                                'name' => $mechanic['name'],
+                            ],
+                            $data['mechanics']
+                        );
+
+                        $profile->members()->createMany(
+                            $members
+                        );
+
+                        $profile->documents()->createMany(
+                            $documents
+                        );
+                    }
+
+                    AuditLog::record(
+                        $user,
+                        'user.registered',
+                        details: [
+                            'role' => $user->role
+                        ]
+                    );
+
+                    return $user;
+                }
             );
 
-            return $user;
-        });
+        } catch (Throwable $exception) {
 
-        // Automatically login after registration
+            $documentService->delete(
+                array_column(
+                    $documents,
+                    'document_path'
+                )
+            );
+
+            throw $exception;
+        }
+
         Auth::login($user);
 
         $request->session()->regenerate();
 
-        return redirect()->route(
-            $user->role . '.dashboard'
-        );
+        if ($user->role === 'mechanic') {
+
+            return redirect()
+                ->route('mechanic.verification.status')
+                ->with(
+                    'success',
+                    'Your registration has been submitted successfully.'
+                );
+        }
+
+        return redirect()->route('rider.dashboard');
     }
 
     public function login(Request $request)
@@ -166,9 +282,11 @@ class AuthController extends Controller
             $credentials,
             $request->boolean('remember')
         )) {
+
             return back()
                 ->withErrors([
-                    'email' => 'The provided credentials are incorrect.'
+                    'email' =>
+                        'The provided credentials are incorrect.'
                 ])
                 ->onlyInput('email');
         }
@@ -176,9 +294,11 @@ class AuthController extends Controller
         $user = $request->user();
 
         if ($user->is_suspended) {
+
             Auth::logout();
 
             $request->session()->invalidate();
+
             $request->session()->regenerateToken();
 
             return back()->withErrors([
@@ -187,6 +307,7 @@ class AuthController extends Controller
         }
 
         DB::transaction(function () use ($user): void {
+
             $user->update([
                 'last_login_at' => now()
             ]);
@@ -195,12 +316,29 @@ class AuthController extends Controller
                 $user,
                 'user.logged_in'
             );
+
         });
 
         $request->session()->regenerate();
 
+        if ($user->role === 'mechanic') {
+
+            $profile = $user->mechanicProfile;
+
+            if (
+                !$profile
+                || !$profile->is_verified
+                || $profile->verification_status !== 'approved'
+            ) {
+
+                return redirect()->route(
+                    'mechanic.verification.status'
+                );
+            }
+        }
+
         return redirect()->route(
-            $user->role . '.dashboard'
+            $user->role.'.dashboard'
         );
     }
 
@@ -214,6 +352,7 @@ class AuthController extends Controller
         Auth::logout();
 
         $request->session()->invalidate();
+
         $request->session()->regenerateToken();
 
         return redirect()->route('login');

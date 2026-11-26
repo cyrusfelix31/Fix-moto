@@ -1,635 +1,856 @@
-
 @extends('layouts.app')
-@section('title', 'Create account - FIXMOTO')
+
+@section('title', 'Create Account - FIXMOTO')
+
 @section('content')
 
-<section class="auth-card wide">
+<link rel="stylesheet"
+      href="{{ asset('css/shop-registration.css') }}?v=4">
+
+<section class="auth-card wide fixmoto-registration">
+
+    {{-- FIXMOTO BRAND --}}
 
     <div class="auth-brand">
+
         <span class="brand-mark">F</span>
+
         <strong>FIXMOTO</strong>
+
     </div>
 
     <h2>Create your account</h2>
-    <p>Join the FIXMOTO roadside service network</p>
 
-    {{-- Display validation errors --}}
+    <p>Join the FIXMOTO roadside service network.</p>
+
+
+    {{-- VALIDATION ERRORS --}}
+
     @if($errors->any())
-        <div class="alert error">
+
+        <div class="alert error" role="alert">
+
             @foreach($errors->all() as $error)
+
                 <div>{{ $error }}</div>
+
             @endforeach
+
         </div>
+
     @endif
 
-    <form method="POST" action="{{ route('register') }}">
+
+    {{-- REGISTRATION FORM --}}
+
+    <form method="POST"
+          id="registration-form"
+          action="{{ route('register') }}"
+          enctype="multipart/form-data">
 
         @csrf
 
-        {{-- Account Role --}}
+
+        {{-- ACCOUNT TYPE SELECTION --}}
+
         <div class="role-picker">
 
             <label>
-                <input
-                    type="radio"
-                    name="role"
-                    value="rider"
-                    @checked(old('role', 'rider') === 'rider')
-                    required
-                >
+
+                <input type="radio"
+                       name="role"
+                       value="rider"
+                       @checked(old('role', 'rider') === 'rider')>
 
                 <span>
+
                     <i data-lucide="bike"></i>
+
                     <strong>Rider</strong>
+
                     <small>I need roadside help</small>
+
                 </span>
+
             </label>
 
             <label>
-                <input
-                    type="radio"
-                    name="role"
-                    value="mechanic"
-                    @checked(old('role') === 'mechanic')
-                    required
-                >
+
+                <input type="radio"
+                       name="role"
+                       value="mechanic"
+                       @checked(old('role') === 'mechanic')>
 
                 <span>
-                    <i data-lucide="building-2"></i>
-                    <strong>Mechanic shop</strong>
+
+                    <i data-lucide="store"></i>
+
+                    <strong>Mechanic Shop</strong>
+
                     <small>We provide repairs</small>
+
                 </span>
+
             </label>
 
         </div>
 
-        <div class="form-grid">
 
-            {{-- Account Information --}}
-            <label>
-                <span id="account-name-label">
-                    Your name
+        {{-- ==================================
+             OWNER INFORMATION
+             ================================== --}}
+
+        <section class="registration-section">
+
+            <div class="registration-section-header">
+
+                <span class="registration-icon">
+
+                    <i data-lucide="user-round"></i>
+
                 </span>
 
-                <input
-                    type="text"
-                    name="name"
-                    value="{{ old('name') }}"
-                    autocomplete="name"
-                    required
-                >
-            </label>
+                <div>
 
-            <label>
-                Phone
+                    <h3 id="information-title">
 
-                <input
-                    type="tel"
-                    name="phone"
-                    value="{{ old('phone') }}"
-                    autocomplete="tel"
-                >
-            </label>
+                        Personal Information
 
-            <label>
-                Email
+                    </h3>
 
-                <input
-                    type="email"
-                    name="email"
-                    value="{{ old('email') }}"
-                    autocomplete="email"
-                    required
-                >
-            </label>
+                    <p>Provide your account details.</p>
 
-            <label>
-                Password
-
-                <input
-                    type="password"
-                    name="password"
-                    minlength="8"
-                    autocomplete="new-password"
-                    required
-                >
-            </label>
-
-            <label>
-                Confirm password
-
-                <input
-                    type="password"
-                    name="password_confirmation"
-                    minlength="8"
-                    autocomplete="new-password"
-                    required
-                >
-            </label>
-
-            {{-- Mechanic Shop Information --}}
-            <label class="mechanic-fields"
-                   style="display: none;">
-
-                Shop name
-
-                <input
-                    type="text"
-                    id="shop-name"
-                    name="shop_name"
-                    value="{{ old('shop_name') }}"
-                    disabled
-                >
-
-            </label>
-
-            <label class="mechanic-fields"
-                   style="display: none;">
-
-                Service address
-
-                <textarea
-                    id="service-address"
-                    name="service_address"
-                    disabled
-                >{{ old('service_address') }}</textarea>
-
-            </label>
-
-            {{-- GPS Shop Location --}}
-            <div class="mechanic-fields"
-                 style="display: none;">
-
-                <strong>Pin your shop location</strong>
-
-                <p class="muted">
-                    Tap or click the map to place the pin
-                    in the Calapan service area.
-                </p>
-
-                <div
-                    id="shop-location-map"
-                    class="request-location-map"
-                    role="application"
-                    aria-label="Choose mechanic shop location on map">
                 </div>
-
-                <p
-                    id="shop-location-status"
-                    class="muted"
-                    role="status"
-                    aria-live="polite">
-
-                    No shop location selected.
-
-                </p>
 
             </div>
 
-            <input
-                id="shop-latitude"
-                name="latitude"
-                type="hidden"
-                value="{{ old('latitude') }}"
-                disabled
-            >
+            <div class="registration-grid">
 
-            <input
-                id="shop-longitude"
-                name="longitude"
-                type="hidden"
-                value="{{ old('longitude') }}"
-                disabled
-            >
 
-            {{-- Mechanic Roster --}}
-            <div class="mechanic-fields mechanic-roster"
-                 style="display: none;">
+                {{-- OWNER NAME --}}
 
-                <div class="mechanic-roster-header">
+                <label class="registration-full">
 
-                    <strong>
-                        Mechanics in your shop
-                    </strong>
+                    <span id="account-name-label">
 
-                    <span id="mechanic-count">
-                        0 mechanics
+                        Full name
+
                     </span>
 
+                    <input type="text"
+                           name="name"
+                           value="{{ old('name') }}"
+                           placeholder="Enter full name"
+                           maxlength="255"
+                           autocomplete="name"
+                           required>
+
+                </label>
+
+
+                {{-- OWNER CONTACT --}}
+
+                <label>
+
+                    Contact number
+
+                    <input type="tel"
+                           name="phone"
+                           value="{{ old('phone') }}"
+                           placeholder="09XXXXXXXXX"
+                           maxlength="32"
+                           autocomplete="tel">
+
+                </label>
+
+
+                {{-- EMAIL ADDRESS --}}
+
+                <label>
+
+                    Email address
+
+                    <input type="email"
+                           name="email"
+                           value="{{ old('email') }}"
+                           placeholder="Enter email address"
+                           autocomplete="email"
+                           required>
+
+                </label>
+
+
+                {{-- OWNER VALID ID --}}
+
+                <div class="registration-full mechanic-fields"
+                     hidden>
+
+                    <div class="document-upload-card">
+
+                        <h4>Owner's Valid ID</h4>
+
+                        <label class="document-dropzone">
+
+                            <i data-lucide="upload-cloud"></i>
+
+                            <strong>Upload Valid ID</strong>
+
+                            <small>
+                                PDF, JPG or PNG — Max 5 MB
+                            </small>
+
+                            <input type="file"
+                                   name="valid_id"
+                                   accept=".pdf,.jpg,.jpeg,.png"
+                                   required
+                                   disabled>
+
+                        </label>
+
+                        <label class="document-expiration">
+
+                            Expiration date (if applicable)
+
+                            <input type="date"
+                                   name="valid_id_expiration"
+                                   min="{{ today()->toDateString() }}"
+                                   value="{{ old('valid_id_expiration') }}"
+                                   disabled>
+
+                        </label>
+
+                    </div>
+
                 </div>
-
-                <div
-                    id="mechanic-roster-fields"
-                    class="mechanic-roster-fields">
-                </div>
-
-                <button
-                    id="add-mechanic"
-                    type="button"
-                    class="btn outline">
-
-                    Add mechanic
-
-                </button>
 
             </div>
 
-        </div>
+        </section>
 
-        <button
-            class="btn primary"
-            type="submit">
 
-            Create account
+        {{-- ==================================
+             SHOP INFORMATION
+             ================================== --}}
+
+        <section id="shop-information-section"
+                 class="registration-section mechanic-fields"
+                 hidden>
+
+            <div class="registration-section-header">
+
+                <span class="registration-icon">
+
+                    <i data-lucide="store"></i>
+
+                </span>
+
+                <div>
+
+                    <h3>Shop Information</h3>
+
+                    <p>Provide your registered business details.</p>
+
+                </div>
+
+            </div>
+
+            <div class="registration-grid">
+
+
+                {{-- SHOP NAME --}}
+
+                <label class="registration-full">
+
+                    Shop name
+
+                    <input type="text"
+                           id="shop-name"
+                           name="shop_name"
+                           value="{{ old('shop_name') }}"
+                           placeholder="Enter registered shop name"
+                           maxlength="255"
+                           disabled>
+
+                </label>
+
+
+                {{-- SHOP ADDRESS WITH GPS --}}
+
+                <div class="registration-full shop-address-section">
+
+                    <label for="service-address">
+
+                        Shop address
+
+                    </label>
+
+                    <div class="shop-address-wrapper">
+
+                        <div class="shop-address-input-group">
+
+                            <input type="text"
+                                   id="service-address"
+                                   name="service_address"
+                                   value="{{ old('service_address') }}"
+                                   placeholder="Search address in Calapan City"
+                                   maxlength="1000"
+                                   autocomplete="off"
+                                   aria-describedby="shop-location-status"
+                                   disabled>
+
+                            <button type="button"
+                                    id="open-shop-map"
+                                    class="shop-gps-button"
+                                    title="Pin shop location"
+                                    aria-label="Open GPS map"
+                                    disabled>
+
+                                <i data-lucide="map-pin"></i>
+
+                            </button>
+
+                        </div>
+
+                        {{-- ADDRESS RECOMMENDATIONS --}}
+
+                        <div id="address-suggestions"
+                             class="address-suggestions"
+                             hidden>
+
+                        </div>
+
+                    </div>
+
+                    <small class="address-hint">
+
+                        Search for a barangay, street,
+                        subdivision or landmark within Calapan City.
+
+                        Click the GPS icon to manually pin
+                        your exact shop location.
+
+                    </small>
+
+                    <p id="shop-location-status"
+                       class="shop-location-status"
+                       role="status">
+
+                        @if(old('latitude') && old('longitude'))
+
+                            Shop location selected.
+
+                        @else
+
+                            No shop location selected.
+
+                        @endif
+
+                    </p>
+
+                    {{-- GPS COORDINATES --}}
+
+                    <input type="hidden"
+                           name="latitude"
+                           id="shop-latitude"
+                           value="{{ old('latitude') }}"
+                           disabled>
+
+                    <input type="hidden"
+                           name="longitude"
+                           id="shop-longitude"
+                           value="{{ old('longitude') }}"
+                           disabled>
+
+                </div>
+
+
+                {{-- SHOP CONTACT NUMBER --}}
+
+                <label class="registration-full">
+
+                    Shop contact number
+
+                    <input type="tel"
+                           name="shop_phone"
+                           value="{{ old('shop_phone') }}"
+                           placeholder="Enter shop contact number"
+                           maxlength="32"
+                           required
+                           disabled>
+
+                </label>
+
+            </div>
+
+        </section>
+
+
+        {{-- ==================================
+             BUSINESS DOCUMENTS
+             ================================== --}}
+
+        <section class="registration-section mechanic-fields"
+                 hidden>
+
+            <div class="registration-section-header">
+
+                <span class="registration-icon">
+
+                    <i data-lucide="file-check"></i>
+
+                </span>
+
+                <div>
+
+                    <h3>Business Documents</h3>
+
+                    <p>Upload clear and valid business documents.</p>
+
+                </div>
+
+            </div>
+
+
+            {{-- BUSINESS PERMIT --}}
+
+            <div class="document-upload-card">
+
+                <h4>Business Permit</h4>
+
+                <label class="document-dropzone">
+
+                    <i data-lucide="upload-cloud"></i>
+
+                    <strong>Upload Business Permit</strong>
+
+                    <small>PDF, JPG or PNG — Max 5 MB</small>
+
+                    <input type="file"
+                           name="business_permit"
+                           accept=".pdf,.jpg,.jpeg,.png"
+                           required
+                           disabled>
+
+                </label>
+
+                <label class="document-expiration">
+
+                    Expiration date
+
+                    <input type="date"
+                           name="business_permit_expiration"
+                           min="{{ today()->toDateString() }}"
+                           value="{{ old('business_permit_expiration') }}"
+                           required
+                           disabled>
+
+                </label>
+
+            </div>
+
+
+            {{-- MAYOR'S PERMIT --}}
+
+            <div class="document-upload-card">
+
+                <h4>Mayor's Permit</h4>
+
+                <label class="document-dropzone">
+
+                    <i data-lucide="upload-cloud"></i>
+
+                    <strong>Upload Mayor's Permit</strong>
+
+                    <small>PDF, JPG or PNG — Max 5 MB</small>
+
+                    <input type="file"
+                           name="mayors_permit"
+                           accept=".pdf,.jpg,.jpeg,.png"
+                           required
+                           disabled>
+
+                </label>
+
+                <label class="document-expiration">
+
+                    Expiration date
+
+                    <input type="date"
+                           name="mayors_permit_expiration"
+                           min="{{ today()->toDateString() }}"
+                           value="{{ old('mayors_permit_expiration') }}"
+                           required
+                           disabled>
+
+                </label>
+
+            </div>
+
+
+            {{-- BIR CERTIFICATE --}}
+
+            <div class="document-upload-card">
+
+                <h4>BIR Certificate of Registration</h4>
+
+                <label class="document-dropzone">
+
+                    <i data-lucide="upload-cloud"></i>
+
+                    <strong>Upload BIR Certificate</strong>
+
+                    <small>PDF, JPG or PNG — Max 5 MB</small>
+
+                    <input type="file"
+                           name="bir_certificate"
+                           accept=".pdf,.jpg,.jpeg,.png"
+                           required
+                           disabled>
+
+                </label>
+
+            </div>
+
+            <small class="address-hint">
+
+                Documents are submitted for administrator
+                verification.
+
+            </small>
+
+        </section>
+
+
+        {{-- ==================================
+             MECHANIC TEAM
+             ================================== --}}
+
+        <section id="mechanic-team-section"
+                 class="registration-section mechanic-fields"
+                 hidden>
+
+            <div class="registration-section-header">
+
+                <span class="registration-icon">
+
+                    <i data-lucide="users"></i>
+
+                </span>
+
+                <div>
+
+                    <h3>Mechanic Team</h3>
+
+                    <p>Register the mechanics in your shop.</p>
+
+                </div>
+
+            </div>
+
+            <div class="mechanic-roster-heading">
+
+                <strong>Registered mechanics</strong>
+
+                <span id="mechanic-count">
+
+                    1 mechanic
+
+                </span>
+
+            </div>
+
+            <div id="mechanic-roster-fields"></div>
+
+            <button type="button"
+                    id="add-mechanic"
+                    class="btn outline add-mechanic-button"
+                    disabled>
+
+                Add Mechanic
+
+            </button>
+
+        </section>
+
+
+        {{-- ==================================
+             ACCOUNT SECURITY
+             ================================== --}}
+
+        <section class="registration-section">
+
+            <div class="registration-section-header">
+
+                <span class="registration-icon">
+
+                    <i data-lucide="lock"></i>
+
+                </span>
+
+                <div>
+
+                    <h3>Account Security</h3>
+
+                    <p>Create a secure password.</p>
+
+                </div>
+
+            </div>
+
+            <div class="registration-grid">
+
+                <label class="registration-full">
+
+                    Password
+
+                    <input type="password"
+                           name="password"
+                           placeholder="Enter password"
+                           minlength="8"
+                           autocomplete="new-password"
+                           required>
+
+                </label>
+
+                <label class="registration-full">
+
+                    Confirm password
+
+                    <input type="password"
+                           name="password_confirmation"
+                           placeholder="Confirm your password"
+                           minlength="8"
+                           autocomplete="new-password"
+                           required>
+
+                </label>
+
+            </div>
+
+        </section>
+
+
+        {{-- REGISTER BUTTON --}}
+
+        <button type="submit"
+                id="registration-submit"
+                class="btn primary registration-submit">
+
+            Create Account
 
         </button>
 
     </form>
 
+
+    {{-- LOGIN LINK --}}
+
     <p class="auth-switch">
+
         Already have an account?
 
         <a href="{{ route('login') }}">
+
             Sign in
+
         </a>
+
     </p>
 
 </section>
 
+
+{{-- ======================================
+     GPS LOCATION MAP MODAL
+     ====================================== --}}
+
+<dialog id="shop-map-modal"
+        class="shop-map-modal"
+        aria-labelledby="shop-map-title">
+
+    <div class="shop-map-modal-content">
+
+        <div class="shop-map-modal-header">
+
+            <div>
+
+                <h2 id="shop-map-title">
+
+                    Pin Shop Location
+
+                </h2>
+
+                <p>
+
+                    Select your exact business location
+                    within Calapan City.
+
+                </p>
+
+            </div>
+
+            <button type="button"
+                    id="close-shop-map"
+                    class="shop-map-close"
+                    aria-label="Close map">
+
+                &times;
+
+            </button>
+
+        </div>
+
+
+        {{-- REAL LEAFLET MAP --}}
+
+        <div id="shop-location-map"
+             class="shop-picker-map"
+             aria-label="Calapan City map">
+
+        </div>
+
+
+        {{-- SELECTED LOCATION DETAILS --}}
+
+        <div class="selected-location-details">
+
+            <small>Selected address</small>
+
+            <strong id="selected-shop-address">
+
+                No location selected.
+
+            </strong>
+
+            <div class="shop-coordinate-grid">
+
+                <div>
+
+                    <small>Latitude</small>
+
+                    <strong id="selected-latitude">
+
+                        —
+
+                    </strong>
+
+                </div>
+
+                <div>
+
+                    <small>Longitude</small>
+
+                    <strong id="selected-longitude">
+
+                        —
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <div>
+
+                <small>Detected barangay</small>
+
+                <strong id="selected-barangay">
+
+                    —
+
+                </strong>
+
+            </div>
+
+        </div>
+
+        <p id="shop-map-message"
+           class="shop-map-message"
+           role="status">
+
+            Click the map to place your shop location pin.
+
+        </p>
+
+
+        {{-- MAP ACTION BUTTONS --}}
+
+        <div class="shop-map-actions">
+
+            <button type="button"
+                    id="cancel-shop-location"
+                    class="btn outline">
+
+                Cancel
+
+            </button>
+
+            <button type="button"
+                    id="confirm-shop-location"
+                    class="btn primary"
+                    disabled>
+
+                Confirm Location
+
+            </button>
+
+        </div>
+
+    </div>
+
+</dialog>
+
+
+{{-- LOAD LEAFLET IF THE LAYOUT DOES NOT PROVIDE IT --}}
+
 <script>
 
-const mechanicRoleInputs = [
-    ...document.querySelectorAll('input[name="role"]')
-];
+if (typeof window.L === 'undefined') {
 
-const mechanicFields = [
-    ...document.querySelectorAll('.mechanic-fields')
-];
+    const leafletCSS = document.createElement('link');
 
-const mechanicRosterFields =
-    document.getElementById('mechanic-roster-fields');
+    leafletCSS.rel = 'stylesheet';
 
-const mechanicCount =
-    document.getElementById('mechanic-count');
+    leafletCSS.href =
+        'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
 
-const shopNameInput =
-    document.getElementById('shop-name');
+    document.head.appendChild(leafletCSS);
 
-const serviceAddressInput =
-    document.getElementById('service-address');
+    const leafletScript = document.createElement('script');
 
-const accountNameLabel =
-    document.getElementById('account-name-label');
+    leafletScript.src =
+        'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
 
-const shopLatitudeInput =
-    document.getElementById('shop-latitude');
-
-const shopLongitudeInput =
-    document.getElementById('shop-longitude');
-
-const shopMapElement =
-    document.getElementById('shop-location-map');
-
-const shopLocationStatus =
-    document.getElementById('shop-location-status');
-
-const addMechanicButton =
-    document.getElementById('add-mechanic');
-
-const existingMechanics =
-    {{ Js::from(old('mechanics', [])) }};
-
-let mechanicNames =
-    Array.isArray(existingMechanics) &&
-    existingMechanics.length
-        ? existingMechanics.map(
-            mechanic => mechanic.name ?? ''
-        )
-        : [''];
-
-let shopMap = null;
-let shopLocationMarker = null;
-
-
-// Check selected account role
-function isMechanicSelected() {
-
-    const selectedRole = document.querySelector(
-        'input[name="role"]:checked'
-    );
-
-    return selectedRole?.value === 'mechanic';
-}
-
-
-// Render mechanic roster
-function renderMechanicRoster() {
-
-    const isMechanicShop = isMechanicSelected();
-
-    mechanicRosterFields.replaceChildren();
-
-    mechanicCount.textContent =
-        `${mechanicNames.length} ${
-            mechanicNames.length === 1
-                ? 'mechanic'
-                : 'mechanics'
-        }`;
-
-    mechanicNames.forEach((name, index) => {
-
-        const row = document.createElement('div');
-
-        row.className = 'mechanic-roster-row';
-
-        const label = document.createElement('label');
-
-        label.textContent =
-            `Mechanic ${index + 1} name`;
-
-        const input = document.createElement('input');
-
-        input.type = 'text';
-
-        input.name = `mechanics[${index}][name]`;
-
-        input.value = name;
-
-        input.maxLength = 255;
-
-        // Disable mechanic fields for Rider registration
-        input.required = isMechanicShop;
-        input.disabled = !isMechanicShop;
-
-        // Preserve entered names
-        input.addEventListener('input', () => {
-            mechanicNames[index] = input.value;
-        });
-
-        label.append(input);
-
-        row.append(label);
-
-        if (mechanicNames.length > 1) {
-
-            const removeButton =
-                document.createElement('button');
-
-            removeButton.type = 'button';
-
-            removeButton.className = 'btn outline';
-
-            removeButton.textContent = 'Remove';
-
-            removeButton.disabled = !isMechanicShop;
-
-            removeButton.addEventListener('click', () => {
-
-                mechanicNames.splice(index, 1);
-
-                renderMechanicRoster();
-
-            });
-
-            row.append(removeButton);
-        }
-
-        mechanicRosterFields.append(row);
-
-    });
-
-    addMechanicButton.disabled =
-        !isMechanicShop || mechanicNames.length >= 50;
+    document.head.appendChild(leafletScript);
 
 }
 
+</script>
 
-// Update fields based on selected role
-function updateRegistrationFields() {
 
-    const isMechanicShop = isMechanicSelected();
+{{-- LARAVEL GPS CONFIGURATION --}}
 
-    mechanicFields.forEach(field => {
+<script>
 
-        field.style.display =
-            isMechanicShop ? 'grid' : 'none';
+window.FixMotoRegistrationConfig = {
 
-    });
+    cityBoundary: {{ Js::from($cityBoundary ?? null) }},
 
-    // Shop name
-    shopNameInput.required = isMechanicShop;
-    shopNameInput.disabled = !isMechanicShop;
+    searchUrl: @json(route('locations.search')),
 
-    // Shop address
-    serviceAddressInput.required = isMechanicShop;
-    serviceAddressInput.disabled = !isMechanicShop;
+    reverseUrl: @json(route('locations.reverse')),
 
-    // GPS coordinates
-    shopLatitudeInput.disabled = !isMechanicShop;
-    shopLongitudeInput.disabled = !isMechanicShop;
+    existingMechanics: {{ Js::from(old('mechanics', [])) }}
 
-    // Account name label
-    accountNameLabel.textContent = isMechanicShop
-        ? 'Shop owner / manager name'
-        : 'Your name';
+};
 
-    // Render roster before updating disabled fields
-    renderMechanicRoster();
+</script>
 
-    mechanicRosterFields.querySelectorAll('input')
-        .forEach(input => {
 
-            input.disabled = !isMechanicShop;
-            input.required = isMechanicShop;
+{{-- REGISTRATION JAVASCRIPT --}}
 
-        });
-
-    // Initialize map only for mechanic registration
-    if (isMechanicShop) {
-
-        window.setTimeout(() => {
-
-            if (isMechanicSelected()) {
-                initializeShopLocationMap();
-            }
-
-        }, 50);
-
-    }
-
-}
-
-
-// Set mechanic shop GPS location
-function setShopLocation(latitude, longitude) {
-
-    if (!window.FixMotoGeography.isInside(
-        {{ Js::from($cityBoundary['geometry']) }},
-        latitude,
-        longitude
-    )) {
-
-        shopLatitudeInput.value = '';
-        shopLongitudeInput.value = '';
-
-        if (shopMap && shopLocationMarker) {
-
-            shopMap.removeLayer(shopLocationMarker);
-
-            shopLocationMarker = null;
-
-        }
-
-        shopLocationStatus.className =
-            'muted shop-location-status is-invalid';
-
-        shopLocationStatus.textContent =
-            'Choose a location within Calapan City boundaries.';
-
-        return;
-
-    }
-
-    const location = [latitude, longitude];
-
-    shopLatitudeInput.value = latitude.toFixed(7);
-
-    shopLongitudeInput.value = longitude.toFixed(7);
-
-    shopLocationStatus.className =
-        'muted shop-location-status is-pinned';
-
-    shopLocationStatus.textContent =
-        'Shop location pinned on the map.';
-
-    if (shopMap) {
-
-        shopMap.setView(location, 15);
-
-        if (shopLocationMarker) {
-
-            shopMap.removeLayer(shopLocationMarker);
-
-        }
-
-        shopLocationMarker = L.marker(location)
-            .addTo(shopMap)
-            .bindPopup('Shop location')
-            .openPopup();
-
-    }
-
-}
-
-
-// Initialize GPS map
-function initializeShopLocationMap() {
-
-    if (!isMechanicSelected()) {
-        return;
-    }
-
-    if (typeof L === 'undefined' ||
-        !window.FixMotoGeography) {
-
-        shopLocationStatus.textContent =
-            'Map services are unavailable. Please refresh the page.';
-
-        return;
-    }
-
-    if (!shopMap) {
-
-        shopMap = L.map(shopMapElement);
-
-        L.tileLayer(
-            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            {
-                attribution: '&copy; OpenStreetMap'
-            }
-        ).addTo(shopMap);
-
-        const cityBoundaryLayer = L.geoJSON(
-
-            {{ Js::from($cityBoundary) }},
-
-            {
-                style: {
-                    color: '#145740',
-                    weight: 2,
-                    fillColor: '#145740',
-                    fillOpacity: 0.08
-                }
-            }
-
-        ).addTo(shopMap);
-
-        shopMap.fitBounds(
-            cityBoundaryLayer.getBounds()
-        );
-
-        shopMap.on('click', event => {
-
-            setShopLocation(
-                event.latlng.lat,
-                event.latlng.lng
-            );
-
-        });
-
-        const latitude =
-            Number(shopLatitudeInput.value);
-
-        const longitude =
-            Number(shopLongitudeInput.value);
-
-        if (
-            shopLatitudeInput.value &&
-            shopLongitudeInput.value
-        ) {
-
-            setShopLocation(latitude, longitude);
-
-        }
-
-    }
-
-    shopMap.invalidateSize();
-
-}
-
-
-// Add mechanic
-addMechanicButton.addEventListener('click', () => {
-
-    if (
-        isMechanicSelected() &&
-        mechanicNames.length < 50
-    ) {
-
-        mechanicNames.push('');
-
-        renderMechanicRoster();
-
-    }
-
-});
-
-
-// Handle role selection
-mechanicRoleInputs.forEach(input => {
-
-    input.addEventListener(
-        'change',
-        updateRegistrationFields
-    );
-
-});
-
-
-// Initialize registration form
-updateRegistrationFields();
-
+<script src="{{ asset('js/shop-registration.js') }}?v=4"
+        defer>
 </script>
 
 @endsection
