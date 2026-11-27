@@ -17,12 +17,14 @@ use Illuminate\Notifications\Notifiable;
     'email',
     'password',
     'role',
-    'phone'
+    'phone',
+    'profile_picture',
 ])]
 
 #[Hidden([
     'password',
-    'remember_token'
+    'remember_token',
+    'profile_picture',
 ])]
 
 class User extends Authenticatable
@@ -78,18 +80,15 @@ class User extends Authenticatable
     ): void
     {
         $query->where('role', 'mechanic')
-
             ->whereHas(
                 'mechanicProfile',
                 function (Builder $profile) {
-
                     $profile
                         ->where('is_verified', false)
                         ->where(
                             'verification_status',
                             'pending'
                         );
-
                 }
             );
     }

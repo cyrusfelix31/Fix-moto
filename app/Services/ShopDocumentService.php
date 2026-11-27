@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\MechanicDocument;
+use App\Models\MechanicProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
@@ -10,13 +11,35 @@ use Throwable;
 
 class ShopDocumentService
 {
-    // DOCUMENT VALIDATION
+    public const EXPIRATION_REQUIRED = [
+        'business_permit',
+        'mayors_permit',
+    ];
 
-    public function rules(bool $registration = false): array
-    {
+    /*
+    |--------------------------------------------------------------------------
+    | DOCUMENT VALIDATION
+    |--------------------------------------------------------------------------
+    */
+
+    public function rules(
+        bool $registration = false,
+        ?array $types = null
+    ): array {
         $rules = [];
 
-        foreach (MechanicDocument::TYPES as $type => $label) {
+        $types ??= array_keys(
+            MechanicDocument::TYPES
+        );
+
+        foreach ($types as $type) {
+
+            if (!array_key_exists(
+                $type,
+                MechanicDocument::TYPES
+            )) {
+                continue;
+            }
 
             $fileRules = [
                 'required',
@@ -33,71 +56,130 @@ class ShopDocumentService
             }
 
             $rules[$type] = $fileRules;
-        }
 
-        // Optional expiration date for Valid ID
+            if ($type === 'bir_certificate') {
+                continue;
+            }
 
-        $rules['valid_id_expiration'] = [
-            'nullable',
-            'date_format:Y-m-d',
-            'after_or_equal:today',
-        ];
+            $expirationRules = [
+                in_array(
+                    $type,
+                    self::EXPIRATION_REQUIRED,
+                    true
+                ) ? 'required' : 'nullable',
 
-        // Required Business Permit expiration
+                'date_format:Y-m-d',
 
-        $rules['business_permit_expiration'] = [
-            'required',
-            'date_format:Y-m-d',
-            'after_or_equal:today',
-        ];
+                'after_or_equal:today',
+            ];
 
-        // Required Mayor's Permit expiration
-
-        $rules['mayors_permit_expiration'] = [
-            'required',
-            'date_format:Y-m-d',
-            'after_or_equal:today',
-        ];
-
-        // Exclude document requirements for Rider accounts
-
-        if ($registration) {
-
-            foreach ([
-                'valid_id_expiration',
-                'business_permit_expiration',
-                'mayors_permit_expiration',
-            ] as $field) {
-
+            if ($registration) {
                 array_unshift(
-                    $rules[$field],
+                    $expirationRules,
                     'exclude_unless:role,mechanic'
                 );
             }
+
+            $rules[$type.'_expiration'] =
+                $expirationRules;
         }
 
         return $rules;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | DOCUMENTS THAT REQUIRE REPLACEMENT
+    |--------------------------------------------------------------------------
+    */
 
-    // STORE UPLOADED DOCUMENTS PRIVATELY
+    public function replacementTypes(
+        MechanicProfile $profile
+    ): array {
+        $documents = $profile->documents()
+            ->get()
+            ->keyBy('document_type');
 
-    public function store(Request $request): array
-    {
+        $required = [];
+
+        foreach (
+            MechanicDocument::TYPES as $type => $label
+        ) {
+
+            $document = $documents->get($type);
+
+            if (!$document) {
+                $required[] = $type;
+                continue;
+            }
+
+            if (
+                $document->status === 'rejected'
+                || $document->isExpired()
+            ) {
+                $required[] = $type;
+                continue;
+            }
+
+            if (
+                in_array(
+                    $type,
+                    self::EXPIRATION_REQUIRED,
+                    true
+                )
+                && !$document->expiration_date
+            ) {
+                $required[] = $type;
+                continue;
+            }
+
+            if (
+                !$document->document_path
+                || !Storage::disk('local')->exists(
+                    $document->document_path
+                )
+            ) {
+                $required[] = $type;
+            }
+        }
+
+        return $required;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PRIVATE DOCUMENT STORAGE
+    |--------------------------------------------------------------------------
+    */
+
+    public function store(
+        Request $request,
+        ?array $types = null
+    ): array {
         $documents = [];
+        $uploadedPaths = [];
+
+        $types ??= array_keys(
+            MechanicDocument::TYPES
+        );
 
         try {
 
-            foreach (MechanicDocument::TYPES as $type => $label) {
+            foreach ($types as $type) {
+
+                if (!array_key_exists(
+                    $type,
+                    MechanicDocument::TYPES
+                )) {
+                    continue;
+                }
 
                 $file = $request->file($type);
 
                 if (!$file || !$file->isValid()) {
-
                     throw new RuntimeException(
                         'A required document is missing or invalid.'
                     );
-
                 }
 
                 $path = $file->store(
@@ -106,12 +188,12 @@ class ShopDocumentService
                 );
 
                 if (!$path) {
-
                     throw new RuntimeException(
                         'Document upload failed.'
                     );
-
                 }
+
+                $uploadedPaths[] = $path;
 
                 $documents[] = [
 
@@ -125,11 +207,14 @@ class ShopDocumentService
                         255
                     ),
 
-                    // BIR Certificate has no expiration field
-
-                    'expiration_date' => $type === 'bir_certificate'
-                        ? null
-                        : ($request->input($type.'_expiration') ?: null),
+                    'expiration_date' =>
+                        $type === 'bir_certificate'
+                            ? null
+                            : (
+                                $request->input(
+                                    $type.'_expiration'
+                                ) ?: null
+                            ),
 
                     'status' => 'pending',
 
@@ -146,21 +231,17 @@ class ShopDocumentService
 
         } catch (Throwable $exception) {
 
-            // Remove uploaded files if an error occurs
-
-            $this->delete(
-                array_column(
-                    $documents,
-                    'document_path'
-                )
-            );
+            $this->delete($uploadedPaths);
 
             throw $exception;
         }
     }
 
-
-    // DELETE REPLACED OR FAILED DOCUMENT UPLOADS
+    /*
+    |--------------------------------------------------------------------------
+    | DELETE OLD DOCUMENT FILES
+    |--------------------------------------------------------------------------
+    */
 
     public function delete(array $paths): void
     {

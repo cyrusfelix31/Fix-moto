@@ -721,6 +721,14 @@ class MechanicController extends Controller
             ->whereNotIn('user_id', $excluded)
             ->whereHas('activeMembers')
             ->get()
+            ->filter(fn (MechanicProfile $profile): bool =>
+                $profile->verification_status === 'approved'
+                && \App\Services\ShopServiceCatalog::supports(
+                    $profile->services ?? [],
+                    $serviceRequest->services
+                        ?: [$serviceRequest->issue_category]
+                )
+            )
             ->map(fn (MechanicProfile $profile): array => [
                 'profile' => $profile,
                 'distance_km' => $profile->distanceTo(

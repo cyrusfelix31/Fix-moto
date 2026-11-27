@@ -3,295 +3,801 @@
 
 <head>
 
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
 
     <meta name="viewport"
-          content="width=device-width, initial-scale=1">
+          content="width=device-width, initial-scale=1.0">
 
-    <title>Shop Verification - FIXMOTO</title>
+    <title>Verification Status | FIXMOTO</title>
 
-    <link rel="stylesheet"
-          href="{{ asset('css/shop-verification.css') }}">
+    @vite([
+        'resources/css/app.css',
+        'resources/js/app.js'
+    ])
 
-    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js">
-    </script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"
+            defer></script>
 
 </head>
 
-<body class="verification-page">
-
 @php
-    $rejected =
-        $profile->verification_status === 'rejected';
 
-    $needsDocuments = $profile->documents->isEmpty();
+    $status = $profile->verification_status;
+
+    $isRejected = $status === 'rejected';
+
+    $documents = $profile->documents
+        ->keyBy('document_type');
+
+    $documentTypes =
+        \App\Models\MechanicDocument::TYPES;
+
+    $requiredExpiration =
+        \App\Services\ShopDocumentService::EXPIRATION_REQUIRED;
+
 @endphp
 
-<main class="verification-status-card">
+<body class="vf-body">
 
-    <div class="verification-brand">
-        <span>F</span>
-        <strong>FIXMOTO</strong>
-    </div>
+    <main class="vf-container">
 
-    <div class="verification-status-icon
-        {{ $rejected ? 'rejected' : 'pending' }}">
+        <!-- FIXMOTO HEADER -->
 
-        <i data-lucide="{{ $rejected
-            ? 'x-circle'
-            : 'clock' }}">
-        </i>
+        <header class="vf-brand-header">
 
-    </div>
+            <div class="vf-brand">
 
-    <h1>
+                <div class="vf-logo">
 
-        {{ $rejected
-            ? 'Application Rejected'
-            : 'Pending for Verification' }}
+                    <i data-lucide="wrench"></i>
 
-    </h1>
-
-    <p class="verification-description">
-
-        @if($rejected)
-
-            Your application requires corrections.
-            Review the administrator's feedback
-            and resubmit your documents.
-
-        @elseif($needsDocuments)
-
-            Please upload your required documents
-            so the administrator can verify your shop.
-
-        @else
-
-            Your registration has been submitted successfully.
-            Our administrator will review your information
-            and business documents.
-
-        @endif
-
-    </p>
-
-    @if(session('success'))
-        <div class="verification-alert success">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if($errors->any())
-        <div class="verification-alert error">
-            @foreach($errors->all() as $error)
-                <p>{{ $error }}</p>
-            @endforeach
-        </div>
-    @endif
-
-
-    <div class="verification-summary">
-
-        <div class="verification-summary-row">
-
-            <span>Shop name</span>
-
-            <strong>{{ $profile->shop_name }}</strong>
-
-        </div>
-
-        <div class="verification-summary-row">
-
-            <span>Application status</span>
-
-            <span class="verification-badge
-                {{ $profile->verification_status }}">
-
-                {{ ucfirst($profile->verification_status) }}
-
-            </span>
-
-        </div>
-
-        <div class="verification-summary-row">
-
-            <span>Documents</span>
-
-            <strong>
-
-                {{ $needsDocuments
-                    ? 'Not yet submitted'
-                    : 'Submitted' }}
-
-            </strong>
-
-        </div>
-
-        <div class="verification-summary-row">
-
-            <span>Account access</span>
-
-            <strong>Restricted</strong>
-
-        </div>
-
-    </div>
-
-
-    {{-- DOCUMENT STATUSES --}}
-
-    <div class="verification-document-list">
-
-        @foreach($profile->documents as $document)
-
-            <div class="verification-summary-row">
+                </div>
 
                 <div>
 
-                    <strong>{{ $document->label }}</strong>
+                    <strong>FIXMOTO</strong>
 
-                    @if($document->rejection_reason)
-
-                        <p class="rejection-feedback">
-
-                            {{ $document->rejection_reason }}
-
-                        </p>
-
-                    @endif
+                    <small>Mechanic Shop Verification</small>
 
                 </div>
-
-                <span class="verification-badge
-                    {{ $document->status }}">
-
-                    {{ ucfirst($document->status) }}
-
-                </span>
 
             </div>
 
-        @endforeach
+            <form method="POST"
+                  action="{{ route('logout') }}">
 
-    </div>
+                @csrf
 
+                <button type="submit"
+                        class="vf-button vf-outline">
 
-    @if($rejected)
+                    <i data-lucide="log-out"></i>
 
-        <div class="verification-alert error">
+                    Logout
 
-            <strong>Reason for rejection</strong>
+                </button>
 
-            <p>
+            </form>
 
-                {{ $latestVerification?->rejection_reason
-                    ?? 'Please review the submitted documents.' }}
-
-            </p>
-
-        </div>
-
-    @endif
+        </header>
 
 
-    {{-- RESUBMIT DOCUMENTS --}}
+        <section class="vf-panel">
 
-    @if($rejected || $needsDocuments)
+            <!-- APPLICATION STATUS -->
 
-        <form method="POST"
-              class="verification-resubmit"
-              action="{{ route('mechanic.verification.resubmit') }}"
-              enctype="multipart/form-data">
+            <div class="vf-status-header">
 
-            @csrf
+                <div class="vf-status-icon
+                    {{ $isRejected ? 'vf-red-icon' : 'vf-amber-icon' }}">
 
-            <h2>Submit Business Documents</h2>
-
-            @foreach(\App\Models\MechanicDocument::TYPES as $type => $label)
-
-                <div class="resubmit-document">
-
-                    <label for="file-{{ $type }}">
-
-                        {{ $label }}
-
-                    </label>
-
-                    <input id="file-{{ $type }}"
-                           type="file"
-                           name="{{ $type }}"
-                           accept=".pdf,.jpg,.jpeg,.png"
-                           required>
-
-                    @if(in_array($type, [
-                        'valid_id',
-                        'business_permit',
-                        'mayors_permit'
-                    ]))
-
-                        <label>
-
-                            Expiration date
-
-                            @if($type === 'valid_id')
-                                (if applicable)
-                            @endif
-
-                            <input type="date"
-                                   name="{{ $type }}_expiration"
-                                   min="{{ today()->toDateString() }}"
-                                   value="{{ old($type.'_expiration') }}"
-                                   @required($type !== 'valid_id')>
-
-                        </label>
-
-                    @endif
+                    <i data-lucide="{{ $isRejected
+                        ? 'circle-x'
+                        : 'clock-3' }}"></i>
 
                 </div>
 
-            @endforeach
+                <h1>
 
-            <button type="submit"
-                    class="verification-button primary">
+                    {{ $isRejected
+                        ? 'Verification Rejected'
+                        : 'Pending Verification' }}
 
-                {{ $rejected
-                    ? 'Resubmit Documents'
-                    : 'Submit Documents' }}
+                </h1>
 
-            </button>
+                <p>
 
-        </form>
+                    @if ($isRejected)
 
-    @else
+                        Your application requires corrections
+                        before it can be approved.
 
-        <a href="{{ route('mechanic.verification.status') }}"
-           class="verification-button primary">
+                    @else
 
-            Check Verification Status
+                        Your application is currently being
+                        reviewed by the FIXMOTO administrator.
 
-        </a>
+                    @endif
 
-    @endif
+                </p>
 
-    <form method="POST"
-          action="{{ route('logout') }}">
+            </div>
 
-        @csrf
 
-        <button class="verification-logout"
-                type="submit">
+            <!-- SUCCESS MESSAGE -->
 
-            Log out
+            @if (session('success'))
 
-        </button>
+                <div class="vf-alert vf-alert-success">
 
-    </form>
+                    <i data-lucide="circle-check"></i>
 
-</main>
+                    <span>{{ session('success') }}</span>
 
-<script>
-    window.lucide?.createIcons();
-</script>
+                </div>
+
+            @endif
+
+
+            <!-- VALIDATION ERRORS -->
+
+            @if ($errors->any())
+
+                <div class="vf-alert vf-alert-danger">
+
+                    <div>
+
+                        <strong>
+                            Please correct the following:
+                        </strong>
+
+                        <ul>
+
+                            @foreach ($errors->all() as $error)
+
+                                <li>{{ $error }}</li>
+
+                            @endforeach
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+            @endif
+
+
+            <!-- SHOP INFORMATION -->
+
+            <div class="vf-shop-summary">
+
+                <div class="vf-shop-icon">
+
+                    <i data-lucide="store"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>{{ $profile->shop_name }}</h3>
+
+                    <p>{{ $profile->service_address }}</p>
+
+                </div>
+
+            </div>
+
+
+            <!-- OVERALL APPLICATION REJECTION REASON -->
+
+            @if (
+                $isRejected
+                && $latestVerification?->rejection_reason
+            )
+
+                <div class="vf-rejection-summary">
+
+                    <i data-lucide="info"></i>
+
+                    <div>
+
+                        <h3>Administrator's Feedback</h3>
+
+                        <p class="vf-preserve-lines">{{ $latestVerification->rejection_reason }}</p>
+
+                        @if ($latestVerification->reviewed_at)
+
+                            <small>
+
+                                Reviewed on
+
+                                {{ $latestVerification
+                                    ->reviewed_at
+                                    ->format('F d, Y - h:i A') }}
+
+                            </small>
+
+                        @endif
+
+                    </div>
+
+                </div>
+
+            @endif
+
+
+            <!-- DOCUMENT RESUBMISSION FORM -->
+
+            <form method="POST"
+
+                  action="{{ route('mechanic.verification.resubmit') }}"
+
+                  enctype="multipart/form-data"
+
+                  id="vf-resubmit-form">
+
+                @csrf
+
+                <div class="vf-document-list">
+
+                    @foreach ($documentTypes as $type => $label)
+
+                        @php
+
+                            $document = $documents->get($type);
+
+                            $needsReplacement = in_array(
+                                $type,
+                                $replacementTypes,
+                                true
+                            );
+
+                            $isExpired =
+                                $document?->isExpired() ?? false;
+
+                            $documentStatus =
+                                $document?->status ?? 'missing';
+
+                            if ($isExpired) {
+
+                                $documentStatus = 'expired';
+
+                            } elseif (
+                                $needsReplacement
+                                && $documentStatus === 'approved'
+                            ) {
+
+                                $documentStatus = 'invalid';
+                            }
+
+                            $reason = trim(
+                                $document?->rejection_reason ?? ''
+                            );
+
+                            $reasonParts = explode(
+                                "\n",
+                                $reason,
+                                2
+                            );
+
+                        @endphp
+
+
+                        <article class="vf-document">
+
+                            <!-- DOCUMENT TITLE AND STATUS -->
+
+                            <div class="vf-document-header">
+
+                                <div class="vf-document-title">
+
+                                    <i data-lucide="file-text"></i>
+
+                                    <strong>{{ $label }}</strong>
+
+                                </div>
+
+                                <span class="vf-badge
+                                    vf-badge-{{ $documentStatus }}">
+
+                                    {{ ucfirst($documentStatus) }}
+
+                                </span>
+
+                            </div>
+
+
+                            <!-- DOCUMENT EXPIRATION -->
+
+                            @if ($document?->expiration_date)
+
+                                <p class="vf-expiration">
+
+                                    <i data-lucide="calendar-days"></i>
+
+                                    Expiration date:
+
+                                    {{ $document->expiration_date
+                                        ->format('F d, Y') }}
+
+                                </p>
+
+                            @endif
+
+
+                            <!-- APPROVED DOCUMENT -->
+
+                            @if (
+                                $documentStatus === 'approved'
+                                && !$needsReplacement
+                            )
+
+                                <p class="vf-approved-note">
+
+                                    <i data-lucide="shield-check"></i>
+
+                                    This document is approved.
+                                    No replacement is needed.
+
+                                </p>
+
+                            @endif
+
+
+                            <!-- REJECTED OR INVALID DOCUMENT -->
+
+                            @if ($needsReplacement)
+
+                                <div class="vf-document-content">
+
+                                    @if ($reason !== '')
+
+                                        @if (count($reasonParts) === 2)
+
+                                            <h4 class="vf-reason">
+
+                                                Reason:
+                                                {{ $reasonParts[0] }}
+
+                                            </h4>
+
+                                            <p class="vf-explanation
+                                                vf-preserve-lines">
+
+                                                {{ $reasonParts[1] }}
+
+                                            </p>
+
+                                        @else
+
+                                            <h4 class="vf-reason">
+
+                                                Reason for rejection
+
+                                            </h4>
+
+                                            <p class="vf-explanation
+                                                vf-preserve-lines">
+
+                                                {{ $reason }}
+
+                                            </p>
+
+                                        @endif
+
+                                    @elseif ($isExpired)
+
+                                        <h4 class="vf-reason">
+
+                                            Reason: Expired document
+
+                                        </h4>
+
+                                        <p class="vf-explanation">
+
+                                            Please upload a renewed
+                                            and valid document.
+
+                                        </p>
+
+                                    @elseif (!$document)
+
+                                        <h4 class="vf-reason">
+
+                                            Reason: Missing document
+
+                                        </h4>
+
+                                        <p class="vf-explanation">
+
+                                            Please upload the required document.
+
+                                        </p>
+
+                                    @else
+
+                                        <h4 class="vf-reason">
+
+                                            Document requires correction
+
+                                        </h4>
+
+                                        <p class="vf-explanation">
+
+                                            Please provide a readable,
+                                            complete and valid replacement
+                                            document.
+
+                                        </p>
+
+                                    @endif
+
+
+                                    @if ($canResubmit)
+
+                                        <!-- DOCUMENT UPLOAD -->
+
+                                        <label class="vf-upload">
+
+                                            <i data-lucide="cloud-upload"></i>
+
+                                            <strong>
+
+                                                Upload Replacement Document
+
+                                            </strong>
+
+                                            <small>
+
+                                                PDF, JPG or PNG — Max 5 MB
+
+                                            </small>
+
+                                            <input
+
+                                                type="file"
+
+                                                name="{{ $type }}"
+
+                                                accept=".pdf,.jpg,.jpeg,.png"
+
+                                                data-vf-upload
+
+                                                required
+
+                                            >
+
+                                            <span class="vf-file-name"
+                                                  aria-live="polite">
+
+                                                No file selected
+
+                                            </span>
+
+                                        </label>
+
+                                        @error($type)
+
+                                            <p class="vf-field-error">
+
+                                                {{ $message }}
+
+                                            </p>
+
+                                        @enderror
+
+
+                                        <!-- EXPIRATION DATE -->
+
+                                        @if ($type !== 'bir_certificate')
+
+                                            <label class="vf-field">
+
+                                                <span>
+
+                                                    New expiration date
+
+                                                    @if (
+                                                        in_array(
+                                                            $type,
+                                                            $requiredExpiration,
+                                                            true
+                                                        )
+                                                    )
+
+                                                        *
+
+                                                    @else
+
+                                                        (Optional)
+
+                                                    @endif
+
+                                                </span>
+
+                                                <input
+
+                                                    type="date"
+
+                                                    name="{{ $type }}_expiration"
+
+                                                    min="{{ now()->toDateString() }}"
+
+                                                    value="{{ old($type.'_expiration') }}"
+
+                                                    @if (
+                                                        in_array(
+                                                            $type,
+                                                            $requiredExpiration,
+                                                            true
+                                                        )
+                                                    )
+                                                        required
+                                                    @endif
+
+                                                >
+
+                                            </label>
+
+                                            @error($type.'_expiration')
+
+                                                <p class="vf-field-error">
+
+                                                    {{ $message }}
+
+                                                </p>
+
+                                            @enderror
+
+                                        @endif
+
+                                    @else
+
+                                        <p class="vf-muted">
+
+                                            Replacement uploads will become
+                                            available when the administrator
+                                            returns your application.
+
+                                        </p>
+
+                                    @endif
+
+                                </div>
+
+                            @endif
+
+
+                            <!-- PENDING DOCUMENT -->
+
+                            @if (
+                                $documentStatus === 'pending'
+                                && !$needsReplacement
+                            )
+
+                                <p class="vf-muted">
+
+                                    This document is waiting for
+                                    administrator review.
+
+                                </p>
+
+                            @endif
+
+                        </article>
+
+                    @endforeach
+
+                </div>
+
+
+                <!-- ADDITIONAL CORRECTION NOTE -->
+
+                @if ($canResubmit)
+
+                    <label class="vf-field">
+
+                        <span>
+
+                            Correction note
+
+                            @if (empty($replacementTypes))
+
+                                *
+
+                            @else
+
+                                (Optional)
+
+                            @endif
+
+                        </span>
+
+                        <textarea
+
+                            name="correction_note"
+
+                            rows="3"
+
+                            maxlength="1000"
+
+                            placeholder="Explain the corrections you have made..."
+
+                            @if (empty($replacementTypes))
+
+                                required
+
+                            @endif
+
+                        >{{ old('correction_note') }}</textarea>
+
+                    </label>
+
+                    <button type="submit"
+
+                            id="vf-submit-button"
+
+                            class="vf-button vf-primary vf-full">
+
+                        <i data-lucide="send"></i>
+
+                        Resubmit for Verification
+
+                    </button>
+
+                    <p class="vf-footer-note">
+
+                        Only documents requiring replacement
+                        will be updated. Previously approved
+                        and valid documents will be retained.
+
+                    </p>
+
+                @else
+
+                    <div class="vf-waiting">
+
+                        <i data-lucide="clock-3"></i>
+
+                        Waiting for administrator review
+
+                    </div>
+
+                @endif
+
+            </form>
+
+        </section>
+
+        <footer class="vf-page-footer">
+
+            FIXMOTO &copy; {{ date('Y') }}
+
+            — Calapan City, Oriental Mindoro
+
+        </footer>
+
+    </main>
+
+
+    <!-- FILE UPLOAD VALIDATION -->
+
+    <script>
+
+        document.addEventListener(
+            'DOMContentLoaded',
+            function () {
+
+                window.lucide?.createIcons();
+
+                const uploadInputs =
+                    document.querySelectorAll(
+                        '[data-vf-upload]'
+                    );
+
+                uploadInputs.forEach(input => {
+
+                    input.addEventListener(
+                        'change',
+                        function () {
+
+                            const label =
+                                input.closest('.vf-upload');
+
+                            const fileName =
+                                label.querySelector(
+                                    '.vf-file-name'
+                                );
+
+                            input.setCustomValidity('');
+
+                            const file = input.files[0];
+
+                            if (!file) {
+
+                                fileName.textContent =
+                                    'No file selected';
+
+                                return;
+
+                            }
+
+                            if (
+                                !/\.(pdf|jpg|jpeg|png)$/i
+                                    .test(file.name)
+                            ) {
+
+                                input.value = '';
+
+                                fileName.textContent =
+                                    'Invalid file format';
+
+                                input.setCustomValidity(
+                                    'Please upload a PDF, JPG or PNG file.'
+                                );
+
+                                input.reportValidity();
+
+                                return;
+
+                            }
+
+                            if (file.size > 5 * 1024 * 1024) {
+
+                                input.value = '';
+
+                                fileName.textContent =
+                                    'File exceeds 5 MB';
+
+                                input.setCustomValidity(
+                                    'The file must not exceed 5 MB.'
+                                );
+
+                                input.reportValidity();
+
+                                return;
+
+                            }
+
+                            fileName.textContent =
+                                file.name;
+
+                        }
+                    );
+
+                });
+
+                const form =
+                    document.getElementById(
+                        'vf-resubmit-form'
+                    );
+
+                const button =
+                    document.getElementById(
+                        'vf-submit-button'
+                    );
+
+                form?.addEventListener(
+                    'submit',
+                    function () {
+
+                        if (button) {
+
+                            button.disabled = true;
+
+                            button.textContent =
+                                'Submitting Documents...';
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+    </script>
 
 </body>
 

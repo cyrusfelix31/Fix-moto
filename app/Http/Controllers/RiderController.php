@@ -87,9 +87,7 @@ class RiderController extends Controller
                 'fixmoto.vehicle_categories'
             ),
 
-            'availableServices' => config(
-                'fixmoto.services'
-            ),
+            'availableServices' => \App\Services\ShopServiceCatalog::riderOptions(),
         ]);
     }
 
@@ -169,7 +167,7 @@ class RiderController extends Controller
                 'required',
                 'string',
                 'distinct',
-                Rule::in(config('fixmoto.services')),
+                Rule::in(\App\Services\ShopServiceCatalog::riderOptions()),
             ],
 
             'issue_category' => [
@@ -177,6 +175,7 @@ class RiderController extends Controller
                 'nullable',
                 'string',
                 'max:100',
+                Rule::in(\App\Services\ShopServiceCatalog::riderOptions()),
             ],
 
             'notes' => [
@@ -253,6 +252,13 @@ class RiderController extends Controller
                 ->whereHas('activeMembers')
                 ->with('mechanic')
                 ->get()
+                ->filter(fn (MechanicProfile $profile): bool =>
+                    $profile->verification_status === 'approved'
+                    && \App\Services\ShopServiceCatalog::supports(
+                        $profile->services ?? [],
+                        $selectedServices
+                    )
+                )
                 ->map(fn (MechanicProfile $profile): array => [
                     'profile' => $profile,
 

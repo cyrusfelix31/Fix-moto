@@ -1,44 +1,51 @@
-@extends('admin.layouts.admin')
-@section('title', 'Review Shop Documents - FIXMOTO')
-@section('page_title', 'Review Shop Application')
+﻿@extends('layouts.app')
+
+@section('title', 'Shop Verification')
 
 @section('content')
 
-<link rel="stylesheet"
-      href="{{ asset('css/shop-verification.css') }}">
+@php
 
-<a href="{{ route('admin.verification') }}"
-   class="verification-back">
+    $isPending =
+        $profile->verification_status === 'pending';
 
-    <i data-lucide="arrow-left"></i>
+    $documents = $profile->documents
+        ->keyBy('document_type');
 
-    Back to Verification
+    $documentTypes =
+        \App\Models\MechanicDocument::TYPES;
 
-</a>
+@endphp
 
-<section class="shop-verification-panel">
+<div class="vf-admin-page">
 
-    <div class="verification-review-heading">
+    <!-- PAGE HEADER -->
+
+    <div class="vf-admin-heading">
 
         <div>
 
-            <h2>{{ $profile->shop_name }}</h2>
+            <a href="{{ route('admin.verification') }}"
+               class="vf-back-link">
+
+                <i data-lucide="arrow-left"></i>
+
+                Back to Verification
+
+            </a>
+
+            <h1>Mechanic Shop Verification</h1>
 
             <p>
 
-                SHOP-{{ str_pad(
-                    $profile->id,
-                    4,
-                    '0',
-                    STR_PAD_LEFT
-                ) }}
+                Review shop information and submitted documents.
 
             </p>
 
         </div>
 
-        <span class="verification-badge
-            {{ $profile->verification_status }}">
+        <span class="vf-badge
+            vf-badge-{{ $profile->verification_status }}">
 
             {{ ucfirst($profile->verification_status) }}
 
@@ -46,282 +53,876 @@
 
     </div>
 
-    @if($errors->any())
 
-        <div class="verification-alert error">
+    <!-- SUCCESS MESSAGE -->
 
-            @foreach($errors->all() as $error)
-                <p>{{ $error }}</p>
+    @if (session('success'))
+
+        <div class="vf-alert vf-alert-success">
+
+            {{ session('success') }}
+
+        </div>
+
+    @endif
+
+
+    <!-- VALIDATION ERRORS -->
+
+    @if ($errors->any())
+
+        <div class="vf-alert vf-alert-danger">
+
+            <div>
+
+                <strong>Unable to complete the action.</strong>
+
+                <ul>
+
+                    @foreach ($errors->all() as $error)
+
+                        <li>{{ $error }}</li>
+
+                    @endforeach
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    @endif
+
+
+    <!-- SHOP INFORMATION -->
+
+    <section class="vf-panel">
+
+        <div class="vf-section-heading">
+
+            <h2>Shop Information</h2>
+
+        </div>
+
+        <div class="vf-shop-summary">
+
+            <div class="vf-shop-icon">
+
+                <i data-lucide="store"></i>
+
+            </div>
+
+            <div>
+
+                <h3>{{ $profile->shop_name }}</h3>
+
+                <p>{{ $profile->service_address }}</p>
+
+            </div>
+
+        </div>
+
+        <div class="vf-info-grid">
+
+            <div>
+
+                <small>Shop owner</small>
+
+                <strong>{{ $user->name }}</strong>
+
+            </div>
+
+            <div>
+
+                <small>Email address</small>
+
+                <strong>{{ $user->email }}</strong>
+
+            </div>
+
+            <div>
+
+                <small>Owner's contact number</small>
+
+                <strong>{{ $user->phone ?? 'Not provided' }}</strong>
+
+            </div>
+
+            <div>
+
+                <small>Shop contact number</small>
+
+                <strong>{{ $profile->shop_phone ?? 'Not provided' }}</strong>
+
+            </div>
+
+            <div>
+
+                <small>Barangay</small>
+
+                <strong>{{ $profile->getAttribute('barangay') ?? 'Unassigned' }}</strong>
+
+            </div>
+
+            <div>
+
+                <small>Registered mechanics</small>
+
+                <strong>{{ $profile->members->count() }}</strong>
+
+            </div>
+
+            <div>
+
+                <small>Latitude</small>
+
+                <strong>{{ $profile->latitude ?? 'Unavailable' }}</strong>
+
+            </div>
+
+            <div>
+
+                <small>Longitude</small>
+
+                <strong>{{ $profile->longitude ?? 'Unavailable' }}</strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- MECHANIC TEAM -->
+
+    <section class="vf-panel">
+
+        <div class="vf-section-heading">
+
+            <h2>Registered Mechanics</h2>
+
+        </div>
+
+        <div class="vf-document-list">
+
+            @forelse ($profile->members as $member)
+
+                <div class="vf-document">
+
+                    <div class="vf-document-title">
+
+                        <i data-lucide="user-round"></i>
+
+                        <strong>{{ $member->name }}</strong>
+
+                    </div>
+
+                </div>
+
+            @empty
+
+                <p class="vf-muted">
+
+                    No registered mechanics.
+
+                </p>
+
+            @endforelse
+
+        </div>
+
+    </section>
+
+
+    <!-- SUBMITTED DOCUMENTS -->
+
+    <section class="vf-panel">
+
+        <div class="vf-section-heading">
+
+            <h2>Submitted Documents</h2>
+
+            <p>
+
+                Review each required document before
+                approving the application.
+
+            </p>
+
+        </div>
+
+        <div class="vf-document-list">
+
+            @foreach ($documentTypes as $type => $label)
+
+                @php
+
+                    $document = $documents->get($type);
+
+                    $documentStatus =
+
+                        $document?->isExpired()
+
+                            ? 'expired'
+
+                            : ($document?->status ?? 'missing');
+
+                @endphp
+
+                <article class="vf-document">
+
+                    <!-- DOCUMENT STATUS -->
+
+                    <div class="vf-document-header">
+
+                        <div class="vf-document-title">
+
+                            <i data-lucide="file-text"></i>
+
+                            <strong>{{ $label }}</strong>
+
+                        </div>
+
+                        <span class="vf-badge
+                            vf-badge-{{ $documentStatus }}">
+
+                            {{ ucfirst($documentStatus) }}
+
+                        </span>
+
+                    </div>
+
+                    @if ($document)
+
+                        <div class="vf-document-content">
+
+                            <p class="vf-muted">
+
+                                File:
+
+                                {{ $document->original_filename }}
+
+                            </p>
+
+                            @if ($document->expiration_date)
+
+                                <p class="vf-expiration">
+
+                                    Expiration:
+
+                                    {{ $document->expiration_date
+                                        ->format('F d, Y') }}
+
+                                </p>
+
+                            @endif
+
+
+                            <!-- EXISTING REJECTION REASON -->
+
+                            @if ($document->rejection_reason)
+
+                                <div class="vf-rejection-summary">
+
+                                    <div>
+
+                                        <h3>Rejection Reason</h3>
+
+                                        <p class="vf-preserve-lines">{{ $document->rejection_reason }}</p>
+
+                                    </div>
+
+                                </div>
+
+                            @endif
+
+
+                            <!-- DOCUMENT ACTIONS -->
+
+                            <div class="vf-document-actions">
+
+                                <a
+
+                                    href="{{ action(
+                                        [
+                                            \App\Http\Controllers\ShopVerificationController::class,
+                                            'viewDocument'
+                                        ],
+                                        ['document' => $document->id]
+                                    ) }}"
+
+                                    target="_blank"
+
+                                    rel="noopener noreferrer"
+
+                                    class="vf-button vf-outline">
+
+                                    <i data-lucide="eye"></i>
+
+                                    View Document
+
+                                </a>
+
+                                @if ($isPending)
+
+                                    <form
+
+                                        method="POST"
+
+                                        action="{{ action(
+                                            [
+                                                \App\Http\Controllers\ShopVerificationController::class,
+                                                'reviewDocument'
+                                            ],
+                                            ['document' => $document->id]
+                                        ) }}">
+
+                                        @csrf
+
+                                        <input type="hidden"
+                                               name="decision"
+                                               value="approve">
+
+                                        <button type="submit"
+
+                                                class="vf-button vf-primary"
+
+                                                @disabled(
+                                                    $document->isExpired()
+                                                    || $document->status === 'approved'
+                                                )>
+
+                                            <i data-lucide="check"></i>
+
+                                            Approve
+
+                                        </button>
+
+                                    </form>
+
+
+                                    <button
+
+                                        type="button"
+
+                                        class="vf-button vf-danger-outline"
+
+                                        data-vf-reject
+
+                                        data-target-label="{{ $label }}"
+
+                                        data-target-type="document"
+
+                                        data-target-url="{{ action(
+                                            [
+                                                \App\Http\Controllers\ShopVerificationController::class,
+                                                'reviewDocument'
+                                            ],
+                                            ['document' => $document->id]
+                                        ) }}">
+
+                                        <i data-lucide="x"></i>
+
+                                        Reject
+
+                                    </button>
+
+                                @endif
+
+                            </div>
+
+                        </div>
+
+                    @else
+
+                        <p class="vf-reason">
+
+                            This required document has not been submitted.
+
+                        </p>
+
+                    @endif
+
+                </article>
+
             @endforeach
 
         </div>
 
-    @endif
+    </section>
 
 
-    {{-- OWNER INFORMATION --}}
+    <!-- OVERALL APPLICATION FEEDBACK -->
 
-    <div class="verification-info-grid">
+    @if (
+        $profile->verification_status === 'rejected'
+        && $latestVerification?->rejection_reason
+    )
 
-        <div class="verification-info-card">
+        <section class="vf-panel">
 
-            <h3>
-                <i data-lucide="user-round"></i>
-                Owner's Information
-            </h3>
+            <h2>Application Rejection Reason</h2>
 
-            <dl>
+            <div class="vf-rejection-summary">
 
-                <dt>Owner's name</dt>
-                <dd>{{ $user->name }}</dd>
-
-                <dt>Contact number</dt>
-                <dd>{{ $user->phone ?? 'Not provided' }}</dd>
-
-                <dt>Email address</dt>
-                <dd>{{ $user->email }}</dd>
-
-            </dl>
-
-        </div>
-
-
-        {{-- SHOP INFORMATION --}}
-
-        <div class="verification-info-card">
-
-            <h3>
-                <i data-lucide="store"></i>
-                Shop Information
-            </h3>
-
-            <dl>
-
-                <dt>Shop name</dt>
-                <dd>{{ $profile->shop_name }}</dd>
-
-                <dt>Shop address</dt>
-                <dd>{{ $profile->service_address }}</dd>
-
-                <dt>Shop contact number</dt>
-                <dd>{{ $profile->shop_phone ?? 'Not provided' }}</dd>
-
-                <dt>Registered mechanics</dt>
-                <dd>{{ $profile->members->count() }}</dd>
-
-            </dl>
-
-        </div>
-
-    </div>
-
-
-    {{-- BUSINESS DOCUMENTS --}}
-
-    <div class="verification-document-heading">
-
-        <h3>
-            <i data-lucide="file-check"></i>
-            Document Verification
-        </h3>
-
-        <p>Review each uploaded document before approving the shop.</p>
-
-    </div>
-
-    @foreach(\App\Models\MechanicDocument::TYPES as $type => $label)
-
-        @php
-
-            $document = $profile->documents
-                ->firstWhere('document_type', $type);
-
-        @endphp
-
-        <article class="verification-document-card">
-
-            <div class="verification-document-header">
-
-                <span class="document-file-icon">
-
-                    <i data-lucide="file-text"></i>
-
-                </span>
-
-                <div class="verification-document-info">
-
-                    <h4>{{ $label }}</h4>
-
-                    @if($document)
-
-                        <p>{{ $document->original_filename }}</p>
-
-                        <small>
-
-                            Expiration date:
-
-                            {{ $document->expiration_date
-                                ?->format('M d, Y')
-                                ?? 'Not applicable' }}
-
-                        </small>
-
-                    @else
-
-                        <p>No document uploaded.</p>
-
-                    @endif
-
-                </div>
-
-                <span class="verification-badge
-                    {{ $document?->status ?? 'pending' }}">
-
-                    {{ $document
-                        ? ucfirst($document->status)
-                        : 'Missing' }}
-
-                </span>
+                <p class="vf-preserve-lines">{{ $latestVerification->rejection_reason }}</p>
 
             </div>
 
-            @if($document)
+        </section>
 
-                @if($document->isExpired())
-
-                    <div class="verification-alert error">
-
-                        This document has expired.
-
-                    </div>
-
-                @endif
-
-                @if($document->rejection_reason)
-
-                    <p class="rejection-feedback">
-
-                        Reason: {{ $document->rejection_reason }}
-
-                    </p>
-
-                @endif
-
-                <div class="verification-document-actions">
-
-                    <a href="{{ route(
-                        'admin.documents.view',
-                        $document
-                    ) }}"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="verification-button outline">
-
-                        <i data-lucide="eye"></i>
-
-                        View File
-
-                    </a>
+    @endif
 
 
-                    @if($profile->verification_status === 'pending')
+    <!-- FINAL APPLICATION DECISION -->
 
-                        <div class="document-decision-buttons">
+    @if ($isPending)
 
-                            <button type="button"
-                                    class="document-approve-button"
-                                    title="Approve document"
-                                    aria-label="Approve {{ $label }}"
-                                    data-review-url="{{ route(
-                                        'admin.documents.review',
-                                        $document
-                                    ) }}"
-                                    data-decision="approve"
-                                    data-review-label="{{ $label }}"
-                                    @disabled($document->isExpired())>
+        <section class="vf-panel">
 
-                                <i data-lucide="check"></i>
+            <div class="vf-section-heading">
 
-                            </button>
+                <h2>Application Decision</h2>
 
-                            <button type="button"
-                                    class="document-reject-button"
-                                    title="Reject document"
-                                    aria-label="Reject {{ $label }}"
-                                    data-review-url="{{ route(
-                                        'admin.documents.review',
-                                        $document
-                                    ) }}"
-                                    data-decision="reject"
-                                    data-review-label="{{ $label }}">
+                <p>
 
-                                <i data-lucide="x"></i>
+                    Approve the shop once all required documents
+                    are approved and valid.
 
-                            </button>
+                    Reject the application to allow the owner
+                    to correct rejected documents.
 
-                        </div>
+                </p>
 
-                    @endif
+            </div>
 
-                </div>
+            <div class="vf-final-actions">
 
-            @endif
+                <button
 
-        </article>
+                    type="button"
 
-    @endforeach
+                    class="vf-button vf-danger-outline"
+
+                    data-vf-reject
+
+                    data-target-label="{{ $profile->shop_name }}"
+
+                    data-target-type="application"
+
+                    data-target-url="{{ action(
+                        [
+                            \App\Http\Controllers\ShopVerificationController::class,
+                            'decide'
+                        ],
+                        ['user' => $user->id]
+                    ) }}">
+
+                    <i data-lucide="circle-x"></i>
+
+                    Reject Application
+
+                </button>
+
+                <form
+
+                    method="POST"
+
+                    action="{{ action(
+                        [
+                            \App\Http\Controllers\ShopVerificationController::class,
+                            'decide'
+                        ],
+                        ['user' => $user->id]
+                    ) }}">
+
+                    @csrf
+
+                    <input
+
+                        type="hidden"
+
+                        name="decision"
+
+                        value="approve"
+
+                    >
+
+                    <button
+
+                        type="submit"
+
+                        class="vf-button vf-primary vf-full"
+
+                        @disabled(!$profile->allDocumentsApproved())>
+
+                        <i data-lucide="shield-check"></i>
+
+                        Approve Application
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    @endif
+
+</div>
 
 
-    {{-- FINAL APPLICATION DECISION --}}
+<!-- =====================================
+     REUSABLE REJECTION MODAL
+     ===================================== -->
 
-    @if($profile->verification_status === 'pending')
+<dialog id="vf-rejection-dialog"
+        class="vf-dialog">
 
-        <div class="verification-final-actions">
+    <form method="POST"
+          id="vf-rejection-form">
+
+        @csrf
+
+        <input type="hidden"
+               name="decision"
+               value="reject">
+
+
+        <!-- MODAL HEADER -->
+
+        <div class="vf-dialog-header">
+
+            <div class="vf-status-icon vf-red-icon">
+
+                <i data-lucide="circle-x"></i>
+
+            </div>
 
             <button type="button"
-                    class="verification-button danger"
-                    data-review-url="{{ route(
-                        'admin.mechanics.verify',
-                        $user
-                    ) }}"
-                    data-decision="reject"
-                    data-review-label="{{ $profile->shop_name }}">
 
-                Reject Application
+                    id="vf-close-dialog"
+
+                    class="vf-close-button"
+
+                    aria-label="Close rejection form">
+
+                <i data-lucide="x"></i>
 
             </button>
 
-            <button type="button"
-                    class="verification-button primary"
-                    data-review-url="{{ route(
-                        'admin.mechanics.verify',
-                        $user
-                    ) }}"
-                    data-decision="approve"
-                    data-review-label="{{ $profile->shop_name }}"
-                    @disabled(!$profile->allDocumentsApproved())>
+            <h2 id="vf-dialog-title">
 
-                Approve Application
+                Reject Document
+
+            </h2>
+
+            <p>
+
+                Provide a clear reason why this
+                submission cannot be approved.
+
+            </p>
+
+        </div>
+
+
+        <!-- DOCUMENT UNDER REVIEW -->
+
+        <div class="vf-dialog-target">
+
+            <small id="vf-target-caption">
+
+                Document under review
+
+            </small>
+
+            <strong id="vf-target-name"></strong>
+
+        </div>
+
+
+        <!-- REJECTION REASONS -->
+
+        <fieldset class="vf-reason-options">
+
+            <legend>
+
+                Reason for rejection *
+
+            </legend>
+
+            @foreach ($rejectionReasons as $reason)
+
+                <label class="vf-radio-option">
+
+                    <input
+
+                        type="radio"
+
+                        name="reason_category"
+
+                        value="{{ $reason }}"
+
+                        required
+
+                    >
+
+                    <span>{{ $reason }}</span>
+
+                </label>
+
+            @endforeach
+
+        </fieldset>
+
+
+        <!-- ADDITIONAL EXPLANATION -->
+
+        <label class="vf-field">
+
+            <span>Additional explanation *</span>
+
+            <textarea
+
+                name="explanation"
+
+                id="vf-explanation"
+
+                rows="4"
+
+                maxlength="850"
+
+                placeholder="Explain what the shop owner needs to correct..."
+
+                required
+
+            ></textarea>
+
+        </label>
+
+        <p class="vf-muted">
+
+            The rejection reason will be visible to the shop owner.
+
+        </p>
+
+
+        <!-- MODAL BUTTONS -->
+
+        <div class="vf-dialog-actions">
+
+            <button
+
+                type="reset"
+
+                class="vf-button vf-outline">
+
+                Reset
+
+            </button>
+
+            <button
+
+                type="submit"
+
+                id="vf-confirm-rejection"
+
+                class="vf-button vf-danger"
+
+                disabled>
+
+                Confirm Rejection
 
             </button>
 
         </div>
 
-        @unless($profile->allDocumentsApproved())
+    </form>
 
-            <p class="verification-hint">
+</dialog>
 
-                All required documents must be approved
-                and valid before approving this application.
 
-            </p>
+<script>
 
-        @endunless
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
 
-    @endif
+            const dialog =
+                document.getElementById(
+                    'vf-rejection-dialog'
+                );
 
-</section>
+            const form =
+                document.getElementById(
+                    'vf-rejection-form'
+                );
 
-@include('admin.verification-modal')
+            const explanation =
+                document.getElementById(
+                    'vf-explanation'
+                );
+
+            const confirmButton =
+                document.getElementById(
+                    'vf-confirm-rejection'
+                );
+
+            let submitted = false;
+
+
+            // Enable confirmation only when
+            // both required fields are completed.
+
+            function validateForm() {
+
+                const selectedReason =
+                    form.querySelector(
+                        'input[name="reason_category"]:checked'
+                    );
+
+                confirmButton.disabled =
+
+                    submitted
+
+                    || !selectedReason
+
+                    || explanation.value.trim() === '';
+
+            }
+
+
+            // Open the correct rejection modal.
+
+            document.querySelectorAll(
+                '[data-vf-reject]'
+            ).forEach(button => {
+
+                button.addEventListener(
+                    'click',
+                    function () {
+
+                        submitted = false;
+
+                        form.reset();
+
+                        form.action =
+                            button.dataset.targetUrl;
+
+                        const isApplication =
+
+                            button.dataset.targetType
+                                === 'application';
+
+                        document.getElementById(
+                            'vf-dialog-title'
+                        ).textContent =
+
+                            isApplication
+
+                                ? 'Reject Application'
+
+                                : 'Reject Document';
+
+                        document.getElementById(
+                            'vf-target-caption'
+                        ).textContent =
+
+                            isApplication
+
+                                ? 'Application under review'
+
+                                : 'Document under review';
+
+                        document.getElementById(
+                            'vf-target-name'
+                        ).textContent =
+                            button.dataset.targetLabel;
+
+                        confirmButton.textContent =
+                            'Confirm Rejection';
+
+                        validateForm();
+
+                        dialog.showModal();
+
+                    }
+                );
+
+            });
+
+
+            // Validate inputs.
+
+            form.addEventListener(
+                'input',
+                validateForm
+            );
+
+            form.addEventListener(
+                'change',
+                validateForm
+            );
+
+            form.addEventListener(
+                'reset',
+                function () {
+
+                    requestAnimationFrame(
+                        validateForm
+                    );
+
+                }
+            );
+
+
+            // Close modal.
+
+            document.getElementById(
+                'vf-close-dialog'
+            ).addEventListener(
+                'click',
+                function () {
+
+                    dialog.close();
+
+                }
+            );
+
+
+            // Prevent invalid and duplicate submissions.
+
+            form.addEventListener(
+                'submit',
+                function (event) {
+
+                    validateForm();
+
+                    if (confirmButton.disabled) {
+
+                        event.preventDefault();
+
+                        return;
+
+                    }
+
+                    submitted = true;
+
+                    confirmButton.disabled = true;
+
+                    confirmButton.textContent =
+                        'Submitting Rejection...';
+
+                }
+            );
+
+            window.lucide?.createIcons();
+
+        }
+    );
+
+</script>
 
 @endsection

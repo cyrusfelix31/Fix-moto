@@ -6,23 +6,25 @@ use App\Http\Controllers\MechanicController;
 use App\Http\Controllers\RiderController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ShopVerificationController;
+use App\Http\Controllers\ShopProfileController;
 use App\Http\Middleware\EnsureMechanicVerified;
 use Illuminate\Support\Facades\Route;
 
+
 Route::get('/', function () {
-
     return auth()->check()
-
         ? redirect()->route(
             auth()->user()->role.'.dashboard'
         )
-
         : redirect()->route('login');
-
 })->name('home');
 
 
-// AUTHENTICATION
+/*
+|--------------------------------------------------------------------------
+| AUTHENTICATION
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('guest')->group(function () {
 
@@ -49,7 +51,11 @@ Route::post('/logout', [
 ])->middleware('auth')->name('logout');
 
 
-// LOCATION SEARCH AND GPS
+/*
+|--------------------------------------------------------------------------
+| LOCATION SEARCH
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('throttle:60,1')->group(function () {
 
@@ -64,42 +70,38 @@ Route::middleware('throttle:60,1')->group(function () {
 });
 
 
-// MECHANIC VERIFICATION STATUS
+/*
+|--------------------------------------------------------------------------
+| MECHANIC VERIFICATION
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware(['auth', 'role:mechanic'])
-
     ->prefix('mechanic')
-
     ->name('mechanic.')
-
     ->group(function () {
 
         Route::get('/verification-status', [
-
-            ShopVerificationController::class,
-            'status'
-
+            ShopVerificationController::class, 'status'
         ])->name('verification.status');
 
         Route::post('/verification-resubmit', [
-
-            ShopVerificationController::class,
-            'resubmit'
-
+            ShopVerificationController::class, 'resubmit'
         ])->middleware('throttle:5,1')
           ->name('verification.resubmit');
 
     });
 
 
-// RIDER ROUTES
+/*
+|--------------------------------------------------------------------------
+| RIDER ROUTES
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware(['auth', 'role:rider'])
-
     ->prefix('rider')
-
     ->name('rider.')
-
     ->group(function () {
 
         Route::get('/dashboard', [
@@ -137,18 +139,19 @@ Route::middleware(['auth', 'role:rider'])
     });
 
 
-// VERIFIED MECHANIC ROUTES
+/*
+|--------------------------------------------------------------------------
+| VERIFIED MECHANIC ROUTES
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware([
     'auth',
     'role:mechanic',
-    EnsureMechanicVerified::class
+    EnsureMechanicVerified::class,
 ])
-
     ->prefix('mechanic')
-
     ->name('mechanic.')
-
     ->group(function () {
 
         Route::get('/dashboard', [
@@ -163,17 +166,51 @@ Route::middleware([
             MechanicController::class, 'team'
         ])->name('team');
 
-        Route::get('/shop-profile', [
-            MechanicController::class, 'shopProfile'
-        ])->name('shop-profile');
-
         Route::post('/availability', [
             MechanicController::class, 'toggleAvailability'
         ])->name('availability');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | NEW SHOP PROFILE ROUTES
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/shop-profile', [
+            ShopProfileController::class, 'index'
+        ])->name('shop-profile');
+
         Route::post('/shop-profile', [
-            MechanicController::class, 'updateShopProfile'
+            ShopProfileController::class, 'update'
         ])->name('shop-profile.update');
+
+        Route::post('/shop-profile/owner', [
+            ShopProfileController::class, 'updateOwner'
+        ])->name('shop-profile.owner.update');
+
+        Route::get('/shop-profile/owner/photo', [
+            ShopProfileController::class, 'ownerPhoto'
+        ])->name('shop-profile.owner.photo');
+
+        Route::post('/shop-profile/members', [
+            ShopProfileController::class, 'storeMember'
+        ])->name('shop-profile.members.store');
+
+        Route::post('/shop-profile/members/{member}', [
+            ShopProfileController::class, 'updateMember'
+        ])->name('shop-profile.members.update');
+
+        Route::get('/shop-profile/members/{member}/photo', [
+            ShopProfileController::class, 'memberPhoto'
+        ])->name('shop-profile.members.photo');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | EXISTING MECHANIC TEAM AND REQUEST ROUTES
+        |--------------------------------------------------------------------------
+        */
 
         Route::post('/team', [
             MechanicController::class, 'storeTeamMember'
@@ -202,14 +239,15 @@ Route::middleware([
     });
 
 
-// ADMIN ROUTES
+/*
+|--------------------------------------------------------------------------
+| ADMIN ROUTES
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware(['auth', 'role:admin'])
-
     ->prefix('admin')
-
     ->name('admin.')
-
     ->group(function () {
 
         Route::get('/dashboard', [
@@ -252,46 +290,24 @@ Route::middleware(['auth', 'role:admin'])
             AdminController::class, 'toggleSuspension'
         ])->name('users.suspend');
 
-
-        // VERIFICATION MANAGEMENT
-
         Route::get('/verification', [
-
-            ShopVerificationController::class,
-            'index'
-
+            ShopVerificationController::class, 'index'
         ])->name('verification');
 
-
         Route::get('/verification/{user}', [
-
-            ShopVerificationController::class,
-            'show'
-
+            ShopVerificationController::class, 'show'
         ])->name('verification.show');
 
-
         Route::get('/documents/{document}', [
-
-            ShopVerificationController::class,
-            'viewDocument'
-
+            ShopVerificationController::class, 'viewDocument'
         ])->name('documents.view');
 
-
         Route::post('/documents/{document}/review', [
-
-            ShopVerificationController::class,
-            'reviewDocument'
-
+            ShopVerificationController::class, 'reviewDocument'
         ])->name('documents.review');
 
-
         Route::post('/mechanics/{user}/verify', [
-
-            ShopVerificationController::class,
-            'decide'
-
+            ShopVerificationController::class, 'decide'
         ])->name('mechanics.verify');
 
     });

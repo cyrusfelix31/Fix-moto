@@ -1,43 +1,260 @@
 @extends('layouts.app')
 @section('title', 'Mechanic Team')
-@section('page_title', 'Mechanic team')
+@section('page_title', 'Mechanic Team')
+
 @section('content')
-<div class="page mechanic-page">
+
+<div class="page mechanic-page sp-page">
+
     @if($errors->any())
-        <div class="alert error" role="alert">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>
+
+        <div class="sp-error" role="alert">
+
+            @foreach($errors->all() as $error)
+
+                <div>{{ $error }}</div>
+
+            @endforeach
+
+        </div>
+
     @endif
 
-    <section class="card">
-        <div class="card-header">
-            <div><h2>Shop roster</h2><p class="muted">{{ $profile->active_members_count }} active of {{ $teamMembers->count() }} registered mechanics</p></div>
+    <section class="sp-card">
+
+        <div class="sp-heading">
+
+            <div>
+
+                <h2>Mechanic Team</h2>
+
+                <p class="sp-muted">
+
+                    {{ $profile->active_members_count }}
+                    active of
+                    {{ $teamMembers->count() }}
+                    registered mechanics
+
+                </p>
+
+            </div>
+
+            @if($teamMembers->count() < 50)
+
+                <a href="{{ route(
+                    'mechanic.shop-profile',
+                    ['add_member' => 1]
+                ) }}"
+                   class="sp-button sp-primary">
+
+                    <i data-lucide="user-plus"></i>
+
+                    Add Mechanic
+
+                </a>
+
+            @endif
+
         </div>
-        <form method="POST" action="{{ route('mechanic.team.store') }}" class="form-grid" style="max-width:640px">
-            @csrf
-            <label>Mechanic name<input name="name" required maxlength="255"></label>
-            <button class="btn primary" @disabled($teamMembers->count() >= 50)>Add mechanic</button>
-        </form>
-        <div class="table-wrap" style="margin-top:14px">
+
+        <div class="table-wrap">
+
             <table>
-                <thead><tr><th>Name</th><th>Status</th><th>Active requests</th><th>Action</th></tr></thead>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Mechanic</th>
+
+                        <th>Contact Number</th>
+
+                        <th>Specialization</th>
+
+                        <th>Experience</th>
+
+                        <th>Status</th>
+
+                        <th>Active Requests</th>
+
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
                 <tbody>
+
                     @forelse($teamMembers as $member)
+
                         <tr>
-                            <td>{{ $member->name }}</td>
-                            <td>{{ $member->is_active ? 'Active' : 'Inactive' }}</td>
-                            <td>{{ $member->active_request_count }}</td>
+
                             <td>
-                                <form method="POST" action="{{ route('mechanic.team.toggle', $member) }}">
-                                    @csrf
-                                    <button class="btn outline" @disabled($member->is_active && $member->active_request_count > 0)>{{ $member->is_active ? 'Deactivate' : 'Activate' }}</button>
-                                </form>
+
+                                <div class="sp-owner-profile"
+                                     style="margin:0">
+
+                                    <div class="sp-avatar">
+
+                                        @if($member->profile_picture)
+
+                                            <img
+                                                src="{{ route(
+                                                    'mechanic.shop-profile.members.photo',
+                                                    $member
+                                                ) }}"
+                                                alt="Mechanic profile picture">
+
+                                        @else
+
+                                            <i data-lucide="user-round"></i>
+
+                                        @endif
+
+                                    </div>
+
+                                    <strong>
+
+                                        {{ $member->name }}
+
+                                    </strong>
+
+                                </div>
+
                             </td>
+
+                            <td>
+
+                                {{ $member->phone
+                                    ?: 'Not provided' }}
+
+                            </td>
+
+                            <td>
+
+                                {{ $member->specialization
+                                    ?: 'General Mechanic' }}
+
+                            </td>
+
+                            <td>
+
+                                {{ $member->years_of_experience !== null
+                                    ? $member->years_of_experience.' year(s)'
+                                    : 'Not provided' }}
+
+                            </td>
+
+                            <td>
+
+                                @if(!$member->is_active)
+
+                                    <span class="sp-status inactive">
+
+                                        Inactive
+
+                                    </span>
+
+                                @elseif($member->active_request_count > 0)
+
+                                    <span class="sp-status busy">
+
+                                        On service
+
+                                    </span>
+
+                                @else
+
+                                    <span class="sp-status active">
+
+                                        Available
+
+                                    </span>
+
+                                @endif
+
+                            </td>
+
+                            <td>
+
+                                {{ $member->active_request_count }}
+
+                            </td>
+
+                            <td>
+
+                                <div style="
+                                    display:flex;
+                                    flex-wrap:wrap;
+                                    gap:7px;
+                                ">
+
+                                    <a href="{{ route(
+                                        'mechanic.shop-profile',
+                                        ['edit_member' => $member->id]
+                                    ) }}"
+                                       class="sp-button sp-outline">
+
+                                        <i data-lucide="pencil"></i>
+
+                                        Edit
+
+                                    </a>
+
+                                    <form method="POST"
+                                          action="{{ route(
+                                              'mechanic.team.toggle',
+                                              $member
+                                          ) }}">
+
+                                        @csrf
+
+                                        <button
+                                            type="submit"
+                                            class="sp-button sp-outline"
+                                            @disabled(
+                                                $member->is_active
+                                                && $member->active_request_count > 0
+                                            )>
+
+                                            {{ $member->is_active
+                                                ? 'Deactivate'
+                                                : 'Activate' }}
+
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </td>
+
                         </tr>
+
                     @empty
-                        <tr><td colspan="4" class="muted">No mechanics added yet.</td></tr>
+
+                        <tr>
+
+                            <td colspan="7"
+                                class="sp-muted"
+                                style="text-align:center">
+
+                                No mechanics registered yet.
+
+                            </td>
+
+                        </tr>
+
                     @endforelse
+
                 </tbody>
+
             </table>
+
         </div>
+
     </section>
+
 </div>
+
 @endsection

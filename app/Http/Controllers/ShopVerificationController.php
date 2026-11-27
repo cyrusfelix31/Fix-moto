@@ -9,29 +9,50 @@ use App\Services\ShopDocumentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class ShopVerificationController extends Controller
 {
-    // ====================================
-    // MECHANIC VERIFICATION STATUS
-    // ====================================
+    public const REJECTION_REASONS = [
 
-    public function status(Request $request)
-    {
+        'Expired document',
+
+        'Blurry or unreadable document',
+
+        'Incomplete document',
+
+        'Incorrect document',
+
+        'Information does not match',
+
+        'Invalid document',
+
+        'Other reason',
+
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | MECHANIC VERIFICATION STATUS
+    |--------------------------------------------------------------------------
+    */
+
+    public function status(
+        Request $request,
+        ShopDocumentService $documentService
+    ) {
+        $user = $request->user();
+
         abort_unless(
-            $request->user()->role === 'mechanic',
+            $user && $user->role === 'mechanic',
             403
         );
 
-        abort_if(
-            $request->user()->is_suspended,
-            403
-        );
+        abort_if($user->is_suspended, 403);
 
-        $profile = $request->user()
-            ->mechanicProfile()
+        $profile = $user->mechanicProfile()
             ->with('documents')
             ->firstOrFail();
 
@@ -39,41 +60,65 @@ class ShopVerificationController extends Controller
             $profile->is_verified
             && $profile->verification_status === 'approved'
         ) {
-
             return redirect()->route(
                 'mechanic.dashboard'
             );
         }
 
-        $latestVerification = $request->user()
+        $latestVerification = $user
             ->mechanicVerifications()
             ->orderByDesc('reviewed_at')
             ->orderByDesc('id')
             ->first();
 
+        $replacementTypes =
+            $documentService->replacementTypes(
+                $profile
+            );
+
+        $canResubmit =
+
+            $profile->verification_status === 'rejected'
+
+            || (
+
+                $profile->verification_status === 'pending'
+
+                && $profile->documents->isEmpty()
+
+            );
+
         return view(
             'auth.pending-verification',
             compact(
                 'profile',
-                'latestVerification'
+                'latestVerification',
+                'replacementTypes',
+                'canResubmit'
             )
         );
     }
 
-
-    // ====================================
-    // ADMIN VERIFICATION LIST
-    // ====================================
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN VERIFICATION LIST
+    |--------------------------------------------------------------------------
+    */
 
     public function index(Request $request)
     {
         $this->authorizeAdmin($request);
 
         $shops = User::query()
+
             ->where('role', 'mechanic')
+
             ->whereHas('mechanicProfile')
+
             ->with('mechanicProfile')
+
             ->latest()
+
             ->get();
 
         $counts = [
@@ -104,16 +149,16 @@ class ShopVerificationController extends Controller
         );
     }
 
-
-    // ====================================
-    // VIEW SHOP AND DOCUMENTS
-    // ====================================
+    /*
+    |--------------------------------------------------------------------------
+    | DISPLAY SHOP APPLICATION
+    |--------------------------------------------------------------------------
+    */
 
     public function show(
         Request $request,
         User $user
     ) {
-
         $this->authorizeAdmin($request);
 
         abort_unless(
@@ -121,36 +166,53 @@ class ShopVerificationController extends Controller
             404
         );
 
-        $profile = $user
-            ->mechanicProfile()
+        $profile = $user->mechanicProfile()
+
             ->with([
                 'documents',
                 'members'
             ])
+
             ->firstOrFail();
+
+        $latestVerification = $user
+            ->mechanicVerifications()
+            ->orderByDesc('reviewed_at')
+            ->orderByDesc('id')
+            ->first();
+
+        $rejectionReasons =
+            self::REJECTION_REASONS;
 
         return view(
             'admin.verification-details',
-            compact('user', 'profile')
+            compact(
+                'user',
+                'profile',
+                'latestVerification',
+                'rejectionReasons'
+            )
         );
     }
 
-
-    // ====================================
-    // SECURE DOCUMENT PREVIEW
-    // ====================================
+    /*
+    |--------------------------------------------------------------------------
+    | SECURE DOCUMENT PREVIEW
+    |--------------------------------------------------------------------------
+    */
 
     public function viewDocument(
         Request $request,
         MechanicDocument $document
     ) {
-
         $this->authorizeAdmin($request);
 
         $disk = Storage::disk('local');
 
         abort_unless(
-            $disk->exists(
+            $document->document_path
+
+            && $disk->exists(
                 $document->document_path
             ),
             404
@@ -163,9 +225,13 @@ class ShopVerificationController extends Controller
         abort_unless(
 
             in_array($mimeType, [
+
                 'application/pdf',
+
                 'image/jpeg',
+
                 'image/png',
+
             ], true),
 
             415
@@ -179,87 +245,124 @@ class ShopVerificationController extends Controller
             ),
 
             [
+
                 'Content-Type' => $mimeType,
+
                 'Content-Disposition' => 'inline',
+
                 'X-Content-Type-Options' => 'nosniff',
+
                 'Cache-Control' => 'private, no-store',
+
             ]
+
         );
     }
 
-
-    // ====================================
-    // INDIVIDUAL DOCUMENT REVIEW
-    // ====================================
+    /*
+    |--------------------------------------------------------------------------
+    | REVIEW INDIVIDUAL DOCUMENT
+    |--------------------------------------------------------------------------
+    */
 
     public function reviewDocument(
         Request $request,
         MechanicDocument $document
     ) {
-
         $this->authorizeAdmin($request);
 
-        $data = $request->validate([
-
-            'decision' => [
-                'required',
-                'in:approve,reject'
-            ],
-
-            'reason' => [
-                'nullable',
-                'required_if:decision,reject',
-                'string',
-                'max:1000'
-            ],
-
-        ]);
+        $data = $this->validateDecision(
+            $request
+        );
 
         DB::transaction(function () use (
+
             $request,
+
             $document,
+
             $data
+
         ) {
 
             $profile = $document
                 ->mechanicProfile()
+
                 ->lockForUpdate()
+
                 ->firstOrFail();
 
             abort_unless(
                 $profile->verification_status === 'pending',
-                409
+                409,
+                'This application is not pending.'
             );
 
             $document->refresh();
 
             abort_unless(
-                $document->mechanic_profile_id === $profile->id,
+                (int) $document->mechanic_profile_id
+                    === (int) $profile->id,
                 404
             );
 
-            if (
-                $data['decision'] === 'approve'
-                && $document->isExpired()
-            ) {
+            $approved =
+                $data['decision'] === 'approve';
 
-                throw ValidationException::withMessages([
-                    'document' =>
-                        'An expired document cannot be approved.',
-                ]);
+            if ($approved) {
+
+                if (
+                    $document->isExpired()
+
+                    || (
+
+                        in_array(
+                            $document->document_type,
+                            ShopDocumentService::EXPIRATION_REQUIRED,
+                            true
+                        )
+
+                        && !$document->expiration_date
+
+                    )
+                ) {
+
+                    throw ValidationException::withMessages([
+
+                        'document' =>
+                            'An expired document or a permit without an expiration date cannot be approved.',
+
+                    ]);
+                }
+
+                if (
+                    !$document->document_path
+
+                    || !Storage::disk('local')->exists(
+                        $document->document_path
+                    )
+                ) {
+
+                    throw ValidationException::withMessages([
+
+                        'document' =>
+                            'The document file is missing.',
+
+                    ]);
+                }
             }
 
             $document->update([
 
                 'status' =>
-                    $data['decision'] === 'approve'
+                    $approved
                         ? 'approved'
                         : 'rejected',
 
                 'rejection_reason' =>
-                    $data['decision'] === 'reject'
-                        ? $data['reason']
-                        : null,
+                    $approved
+                        ? null
+                        : $data['reason'],
 
                 'reviewed_by' =>
                     $request->user()->id,
@@ -277,11 +380,18 @@ class ShopVerificationController extends Controller
                 $profile->mechanic,
 
                 [
+
                     'document_type' =>
                         $document->document_type,
 
                     'decision' =>
                         $data['decision'],
+
+                    'reason' =>
+                        $approved
+                            ? null
+                            : $data['reason'],
+
                 ]
 
             );
@@ -289,21 +399,28 @@ class ShopVerificationController extends Controller
         });
 
         return back()->with(
+
             'success',
-            'Document verification updated.'
+
+            $data['decision'] === 'approve'
+
+                ? 'Document approved successfully.'
+
+                : 'Document rejected. The reason has been recorded.'
+
         );
     }
 
-
-    // ====================================
-    // APPROVE OR REJECT APPLICATION
-    // ====================================
+    /*
+    |--------------------------------------------------------------------------
+    | APPROVE OR REJECT ENTIRE APPLICATION
+    |--------------------------------------------------------------------------
+    */
 
     public function decide(
         Request $request,
         User $user
     ) {
-
         $this->authorizeAdmin($request);
 
         abort_unless(
@@ -311,36 +428,31 @@ class ShopVerificationController extends Controller
             404
         );
 
-        $data = $request->validate([
-
-            'decision' => [
-                'required',
-                'in:approve,reject'
-            ],
-
-            'reason' => [
-                'nullable',
-                'required_if:decision,reject',
-                'string',
-                'max:1000'
-            ],
-
-        ]);
+        $data = $this->validateDecision(
+            $request
+        );
 
         DB::transaction(function () use (
+
             $request,
+
             $user,
+
             $data
+
         ) {
 
             $profile = $user
                 ->mechanicProfile()
+
                 ->lockForUpdate()
+
                 ->firstOrFail();
 
             abort_unless(
                 $profile->verification_status === 'pending',
-                409
+                409,
+                'This application has already been reviewed.'
             );
 
             $approved =
@@ -348,23 +460,45 @@ class ShopVerificationController extends Controller
 
             if ($approved) {
 
-                if (!$profile->allDocumentsApproved()) {
+                if ($user->is_suspended) {
 
                     throw ValidationException::withMessages([
+
                         'verification' =>
-                            'All required documents must be approved and valid.',
+                            'A suspended account cannot be approved.',
+
                     ]);
                 }
 
-                foreach ($profile->documents as $document) {
+                if (!$profile->allDocumentsApproved()) {
 
-                    if (!Storage::disk('local')->exists(
-                        $document->document_path
-                    )) {
+                    throw ValidationException::withMessages([
+
+                        'verification' =>
+                            'All required documents must be approved and valid.',
+
+                    ]);
+                }
+
+                foreach (
+                    $profile->documents as $document
+                ) {
+
+                    if (
+
+                        !$document->document_path
+
+                        || !Storage::disk('local')->exists(
+                            $document->document_path
+                        )
+
+                    ) {
 
                         throw ValidationException::withMessages([
+
                             'verification' =>
                                 'A required document file is missing.',
+
                         ]);
                     }
                 }
@@ -382,8 +516,6 @@ class ShopVerificationController extends Controller
                 'is_online' => false,
 
             ]);
-
-            // Preserve the existing verification history.
 
             $user->mechanicVerifications()->create([
 
@@ -415,7 +547,15 @@ class ShopVerificationController extends Controller
                 $user,
 
                 [
-                    'decision' => $data['decision']
+
+                    'decision' =>
+                        $data['decision'],
+
+                    'reason' =>
+                        $approved
+                            ? null
+                            : $data['reason'],
+
                 ]
 
             );
@@ -423,124 +563,194 @@ class ShopVerificationController extends Controller
         });
 
         return redirect()
+
             ->route('admin.verification')
+
             ->with(
+
                 'success',
-                'Mechanic shop application updated.'
+
+                $data['decision'] === 'approve'
+
+                    ? 'Mechanic shop approved successfully.'
+
+                    : 'Application rejected. The shop owner can now review the rejection reasons.'
+
             );
     }
 
-
-    // ====================================
-    // DOCUMENT RESUBMISSION
-    // ====================================
+    /*
+    |--------------------------------------------------------------------------
+    | SELECTIVE DOCUMENT RESUBMISSION
+    |--------------------------------------------------------------------------
+    */
 
     public function resubmit(
         Request $request,
         ShopDocumentService $documentService
     ) {
-
         $user = $request->user();
 
         abort_unless(
-            $user->role === 'mechanic',
+            $user && $user->role === 'mechanic',
             403
         );
 
-        abort_if(
-            $user->is_suspended,
-            403
-        );
+        abort_if($user->is_suspended, 403);
 
         $profile = $user
             ->mechanicProfile()
             ->firstOrFail();
 
-        $eligible =
-
-            $profile->verification_status === 'rejected'
-
-            || (
-
-                $profile->verification_status === 'pending'
-
-                && !$profile->documents()->exists()
-
-            );
-
-        abort_unless($eligible, 409);
-
-        $request->validate(
-            $documentService->rules()
-        );
-
-        $documents = $documentService->store(
-            $request
-        );
+        $documents = [];
+        $oldPaths = [];
 
         try {
 
-            $oldPaths = DB::transaction(
-                function () use (
-                    $profile,
-                    $documents,
-                    $user
-                ) {
+            DB::transaction(function () use (
 
-                    $lockedProfile = $profile
-                        ->newQuery()
-                        ->whereKey($profile->id)
-                        ->lockForUpdate()
-                        ->firstOrFail();
+                $request,
 
-                    $eligible =
+                $profile,
 
-                        $lockedProfile->verification_status === 'rejected'
+                $user,
 
-                        || (
+                $documentService,
 
-                            $lockedProfile->verification_status === 'pending'
+                &$documents,
 
-                            && !$lockedProfile->documents()->exists()
+                &$oldPaths
 
-                        );
+            ) {
 
-                    abort_unless($eligible, 409);
+                $lockedProfile = $profile
+                    ->newQuery()
 
-                    $oldPaths = $lockedProfile
-                        ->documents()
-                        ->pluck('document_path')
-                        ->all();
+                    ->whereKey($profile->id)
 
-                    $lockedProfile
-                        ->documents()
-                        ->delete();
+                    ->lockForUpdate()
 
-                    $lockedProfile
-                        ->documents()
-                        ->createMany($documents);
+                    ->firstOrFail();
 
-                    $lockedProfile->update([
+                $eligible =
 
-                        'verification_status' => 'pending',
+                    $lockedProfile->verification_status === 'rejected'
 
-                        'is_verified' => false,
+                    || (
 
-                        'is_online' => false,
+                        $lockedProfile->verification_status === 'pending'
 
-                    ]);
-
-                    AuditLog::record(
-
-                        $user,
-
-                        'mechanic.documents_resubmitted'
+                        && !$lockedProfile->documents()->exists()
 
                     );
 
-                    return $oldPaths;
+                abort_unless(
+                    $eligible,
+                    409,
+                    'This application cannot be resubmitted.'
+                );
+
+                $types =
+                    $documentService->replacementTypes(
+                        $lockedProfile
+                    );
+
+                $rules = $documentService->rules(
+                    false,
+                    $types
+                );
+
+                $rules['correction_note'] = [
+
+                    empty($types)
+                        ? 'required'
+                        : 'nullable',
+
+                    'string',
+
+                    'max:1000',
+
+                ];
+
+                $data = $request->validate(
+                    $rules
+                );
+
+                $documents = $documentService->store(
+                    $request,
+                    $types
+                );
+
+                foreach (
+                    $documents as $newDocument
+                ) {
+
+                    $existing = $lockedProfile
+                        ->documents()
+
+                        ->where(
+                            'document_type',
+                            $newDocument['document_type']
+                        )
+
+                        ->first();
+
+                    if ($existing) {
+
+                        if ($existing->document_path) {
+
+                            $oldPaths[] =
+                                $existing->document_path;
+                        }
+
+                        $existing->update(
+                            $newDocument
+                        );
+
+                    } else {
+
+                        $lockedProfile
+                            ->documents()
+
+                            ->create(
+                                $newDocument
+                            );
+                    }
+
                 }
-            );
+
+                // Approved documents that were not
+                // replaced retain their existing status.
+
+                $lockedProfile->update([
+
+                    'verification_status' => 'pending',
+
+                    'is_verified' => false,
+
+                    'is_online' => false,
+
+                ]);
+
+                AuditLog::record(
+
+                    $user,
+
+                    'mechanic.documents_resubmitted',
+
+                    details: [
+
+                        'replaced_documents' =>
+                            implode(', ', $types),
+
+                        'correction_note' =>
+                            $data['correction_note'] ?? null,
+
+                    ]
+
+                );
+
+            });
 
         } catch (Throwable $exception) {
 
@@ -554,30 +764,150 @@ class ShopVerificationController extends Controller
             throw $exception;
         }
 
-        // Delete replaced files only after the database commits.
-        $documentService->delete($oldPaths);
+        // Remove old files only after a successful commit.
+
+        $documentService->delete(
+            $oldPaths
+        );
 
         return redirect()
+
             ->route('mechanic.verification.status')
+
             ->with(
+
                 'success',
-                'Your documents have been submitted for verification.'
+
+                'Your application has been resubmitted for verification.'
+
             );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | REJECTION REASON VALIDATION
+    |--------------------------------------------------------------------------
+    */
 
-    // ====================================
-    // ADMIN AUTHORIZATION
-    // ====================================
+    private function validateDecision(
+        Request $request
+    ): array {
+
+        $data = $request->validate([
+
+            'decision' => [
+
+                'required',
+
+                'in:approve,reject',
+
+            ],
+
+            'reason_category' => [
+
+                'nullable',
+
+                'string',
+
+                Rule::in(
+                    self::REJECTION_REASONS
+                ),
+
+            ],
+
+            'explanation' => [
+
+                'nullable',
+
+                'string',
+
+                'max:850',
+
+            ],
+
+            // Compatibility with existing rejection forms.
+
+            'reason' => [
+
+                'nullable',
+
+                'string',
+
+                'max:1000',
+
+            ],
+
+        ]);
+
+        if ($data['decision'] === 'approve') {
+
+            $data['reason'] = null;
+
+            return $data;
+        }
+
+        $category = trim(
+            $data['reason_category'] ?? ''
+        );
+
+        $explanation = trim(
+            $data['explanation'] ?? ''
+        );
+
+        $legacyReason = trim(
+            $data['reason'] ?? ''
+        );
+
+        if ($category !== '') {
+
+            if ($explanation === '') {
+
+                throw ValidationException::withMessages([
+
+                    'explanation' =>
+                        'Please explain what the shop owner needs to correct.',
+
+                ]);
+            }
+
+            $data['reason'] =
+                $category . "\n" . $explanation;
+
+        } elseif ($legacyReason !== '') {
+
+            $data['reason'] = $legacyReason;
+
+        } else {
+
+            throw ValidationException::withMessages([
+
+                'reason_category' =>
+                    'Please provide a rejection reason.',
+
+            ]);
+        }
+
+        return $data;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN AUTHORIZATION
+    |--------------------------------------------------------------------------
+    */
 
     private function authorizeAdmin(
         Request $request
-    ): void
-    {
+    ): void {
+
         abort_unless(
+
             $request->user()?->role === 'admin'
+
             && !$request->user()->is_suspended,
+
             403
+
         );
     }
 }

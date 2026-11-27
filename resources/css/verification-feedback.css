@@ -1,0 +1,1047 @@
+/* ==========================================
+   FIXMOTO VERIFICATION SYSTEM
+   ========================================== */
+
+.vf-body,
+.vf-admin-page,
+.vf-dialog {
+    --vf-green: #145740;
+    --vf-green-dark: #104633;
+    --vf-green-soft: #e7f2eb;
+    --vf-cream: #f7f6f1;
+    --vf-white: #ffffff;
+    --vf-text: #1e2925;
+    --vf-muted: #6e7a75;
+    --vf-border: #e0e5e1;
+    --vf-danger: #bb4033;
+    --vf-danger-soft: #fdebea;
+}
+
+.vf-body *,
+.vf-admin-page *,
+.vf-dialog * {
+    box-sizing: border-box;
+}
+
+/* ==========================================
+   MAIN PAGE
+   ========================================== */
+
+.vf-body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 40px 20px;
+    background: var(--vf-cream);
+    color: var(--vf-text);
+    font-family: "Instrument Sans", Arial, sans-serif;
+}
+
+.vf-container {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.vf-panel {
+    width: 100%;
+    padding: 28px;
+    background: #ffffff;
+    border: 1px solid #e0e5e1;
+    border-radius: 18px;
+}
+
+.vf-panel h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e2925;
+}
+
+/* ==========================================
+   FIXMOTO BRAND
+   ========================================== */
+
+.vf-brand-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 18px 22px;
+    background: #ffffff;
+    border: 1px solid #e0e5e1;
+    border-radius: 16px;
+}
+
+.vf-brand {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.vf-logo {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    background: #f2b84b;
+    color: #145740;
+    border-radius: 12px;
+}
+
+.vf-logo svg {
+    width: 25px;
+    height: 25px;
+}
+
+.vf-brand strong {
+    display: block;
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #145740;
+}
+
+.vf-brand small {
+    display: block;
+    margin-top: 4px;
+    color: #6e7a75;
+    font-size: 12px;
+}
+
+/* ==========================================
+   VERIFICATION STATUS
+   ========================================== */
+
+.vf-status-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding: 10px 0;
+}
+
+.vf-status-icon {
+    width: 76px;
+    height: 76px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.vf-status-icon svg {
+    width: 35px;
+    height: 35px;
+}
+
+.vf-red-icon {
+    background: #fdebea;
+    color: #bb4033;
+}
+
+.vf-amber-icon {
+    background: #fff3d9;
+    color: #a16a12;
+}
+
+.vf-status-header h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 750;
+    line-height: 1.4;
+    color: #1e2925;
+}
+
+.vf-status-header p {
+    margin: 0;
+    color: #6e7a75;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+/* ==========================================
+   SHOP INFORMATION
+   ========================================== */
+
+.vf-shop-summary {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 16px;
+    margin-bottom: 22px;
+    background: #f6f9f6;
+    border: 1px solid #e0e5e1;
+    border-radius: 12px;
+}
+
+.vf-shop-icon {
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    background: #e7f2eb;
+    color: #145740;
+}
+
+.vf-shop-icon svg {
+    width: 26px;
+    height: 26px;
+}
+
+.vf-shop-summary h3 {
+    margin: 0 0 6px;
+    color: #1e2925;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.vf-shop-summary p {
+    margin: 0;
+    color: #6e7a75;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+/* ==========================================
+   DOCUMENT CARDS
+   ========================================== */
+
+.vf-document-list {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.vf-document {
+    min-width: 0;
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #e0e5e1;
+    border-radius: 12px;
+}
+
+.vf-document-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.vf-document-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.vf-document-title svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: #145740;
+}
+
+.vf-document-title strong {
+    color: #1e2925;
+    font-size: 16px;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+
+.vf-document-content {
+    padding-top: 20px;
+    margin-top: 20px;
+    border-top: 1px solid #e0e5e1;
+}
+
+/* ==========================================
+   DOCUMENT STATUS BADGES
+   ========================================== */
+
+.vf-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 5px 12px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.vf-badge-approved {
+    background: #d9f3e3;
+    color: #087839;
+}
+
+.vf-badge-rejected,
+.vf-badge-expired,
+.vf-badge-invalid,
+.vf-badge-missing {
+    background: #fde6e4;
+    color: #bb4033;
+}
+
+.vf-badge-pending {
+    background: #fff2d7;
+    color: #956510;
+}
+
+.vf-expiration {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 12px 0 0;
+    color: #6e7a75;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.vf-expiration svg {
+    width: 15px;
+    height: 15px;
+}
+
+.vf-approved-note {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 12px 0 0;
+    color: #145740;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.vf-approved-note svg {
+    width: 15px;
+    height: 15px;
+}
+
+/* ==========================================
+   REJECTION FEEDBACK
+   ========================================== */
+
+.vf-rejection-summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 17px;
+    margin: 16px 0 22px;
+    background: #fff4f3;
+    border: 1px solid #f2cfca;
+    border-radius: 11px;
+    color: #a83328;
+}
+
+.vf-rejection-summary > svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.vf-rejection-summary h3 {
+    margin: 0 0 8px;
+    color: #a83328;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.vf-rejection-summary p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.vf-rejection-summary small {
+    display: block;
+    margin-top: 12px;
+    font-size: 11px;
+}
+
+.vf-reason {
+    margin: 0 0 12px;
+    color: #bb4033;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.vf-explanation {
+    margin: 0 0 17px;
+    color: #1e2925;
+    font-size: 14px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.vf-preserve-lines {
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.vf-muted {
+    margin: 10px 0;
+    color: #6e7a75;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+/* ==========================================
+   FILE UPLOAD AREA
+   ========================================== */
+
+.vf-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 170px;
+    padding: 24px;
+    background: #f5faf7;
+    border: 1px dashed #94bba6;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: background .2s ease,
+                border-color .2s ease;
+}
+
+.vf-upload:hover {
+    background: #edf6ef;
+    border-color: #145740;
+}
+
+.vf-upload > svg {
+    width: 30px;
+    height: 30px;
+    color: #145740;
+}
+
+.vf-upload strong {
+    color: #145740;
+    font-size: 18px;
+    font-weight: 650;
+}
+
+.vf-upload small {
+    color: #6e7a75;
+    font-size: 13px;
+}
+
+.vf-upload input[type="file"] {
+    width: 100%;
+    max-width: 320px;
+    font-family: inherit;
+    font-size: 12px;
+    color: #1e2925;
+}
+
+.vf-upload input[type="file"]::file-selector-button {
+    border: 0;
+    border-radius: 7px;
+    margin-right: 10px;
+    padding: 10px 14px;
+    background: #145740;
+    color: #ffffff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.vf-file-name {
+    color: #145740;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+}
+
+/* ==========================================
+   FORM INPUTS
+   ========================================== */
+
+.vf-field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin: 17px 0;
+    color: #555f59;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.vf-field input,
+.vf-field textarea,
+.vf-field select {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 13px 15px;
+    border: 1px solid #d8dfda;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #1e2925;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.vf-field textarea {
+    min-height: 105px;
+    resize: vertical;
+}
+
+.vf-field input:focus,
+.vf-field textarea:focus,
+.vf-field select:focus {
+    outline: none;
+    border-color: #145740;
+    box-shadow: 0 0 0 3px rgba(20, 87, 64, .10);
+}
+
+.vf-field input[type="date"] {
+    cursor: pointer;
+}
+
+.vf-field-error {
+    margin: 8px 0;
+    color: #bb4033;
+    font-size: 12px;
+}
+
+/* ==========================================
+   BUTTONS
+   ========================================== */
+
+.vf-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 12px 18px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background .2s ease,
+                border-color .2s ease;
+}
+
+.vf-button svg {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+}
+
+.vf-primary {
+    background: #145740;
+    color: #ffffff;
+}
+
+.vf-primary:hover {
+    background: #104633;
+    color: #ffffff;
+}
+
+.vf-outline {
+    background: #ffffff;
+    border-color: #d8dfda;
+    color: #145740;
+}
+
+.vf-outline:hover {
+    background: #edf6ef;
+}
+
+.vf-danger {
+    background: #bb4033;
+    color: #ffffff;
+}
+
+.vf-danger:hover {
+    background: #9f3126;
+    color: #ffffff;
+}
+
+.vf-danger-outline {
+    border-color: #edc1bc;
+    background: #ffffff;
+    color: #bb4033;
+}
+
+.vf-danger-outline:hover {
+    background: #fff1ef;
+}
+
+.vf-button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.vf-full {
+    width: 100%;
+}
+
+#vf-submit-button {
+    min-height: 56px;
+    font-size: 16px;
+    border-radius: 11px;
+}
+
+.vf-button:focus-visible {
+    outline: 3px solid #9ebfac;
+    outline-offset: 2px;
+}
+
+/* ==========================================
+   ALERT MESSAGES
+   ========================================== */
+
+.vf-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 15px;
+    margin-bottom: 18px;
+    border: 1px solid;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.vf-alert svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.vf-alert-success {
+    background: #e8f5eb;
+    color: #145740;
+    border-color: #bfdfc8;
+}
+
+.vf-alert-danger {
+    background: #fff0ee;
+    color: #bb4033;
+    border-color: #f2cfca;
+}
+
+.vf-alert ul {
+    margin: 9px 0 0;
+    padding-left: 20px;
+    list-style: disc;
+}
+
+/* ==========================================
+   ADMIN VERIFICATION PAGE
+   ========================================== */
+
+.vf-admin-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    color: #1e2925;
+}
+
+.vf-admin-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.vf-admin-heading h1 {
+    margin: 12px 0 8px;
+    color: #1e2925;
+    font-size: 26px;
+    font-weight: 750;
+}
+
+.vf-admin-heading p {
+    margin: 0;
+    color: #6e7a75;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.vf-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #145740;
+    font-size: 13px;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.vf-back-link svg {
+    width: 17px;
+    height: 17px;
+}
+
+.vf-back-link:hover {
+    text-decoration: underline;
+}
+
+.vf-section-heading {
+    margin-bottom: 22px;
+}
+
+.vf-section-heading p {
+    margin: 8px 0 0;
+    color: #6e7a75;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.vf-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.vf-info-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+}
+
+.vf-info-grid small {
+    color: #6e7a75;
+    font-size: 12px;
+}
+
+.vf-info-grid strong {
+    font-size: 14px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.vf-document-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.vf-document-actions form {
+    margin: 0;
+}
+
+.vf-final-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+/* ==========================================
+   REJECTION MODAL
+   ========================================== */
+
+.vf-dialog {
+    position: fixed;
+    inset: 0;
+    width: calc(100% - 32px);
+    max-width: 590px;
+    max-height: calc(100dvh - 40px);
+    padding: 26px;
+    margin: auto;
+    overflow-y: auto;
+    color: #1e2925;
+    background: #ffffff;
+    border: 1px solid #e0e5e1;
+    border-radius: 18px;
+    box-shadow: 0 20px 70px rgba(0, 0, 0, .18);
+}
+
+.vf-dialog:not([open]) {
+    display: none;
+}
+
+.vf-dialog::backdrop {
+    background: rgba(15, 30, 24, .60);
+    backdrop-filter: blur(3px);
+}
+
+.vf-dialog-header {
+    position: relative;
+    margin-bottom: 22px;
+}
+
+.vf-dialog-header .vf-status-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 15px;
+}
+
+.vf-dialog-header .vf-status-icon svg {
+    width: 29px;
+    height: 29px;
+}
+
+.vf-dialog-header h2 {
+    margin: 0 0 8px;
+    color: #1e2925;
+    font-size: 24px;
+    font-weight: 750;
+}
+
+.vf-dialog-header p {
+    margin: 0;
+    color: #6e7a75;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.vf-close-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #6e7a75;
+    background: #f3f5f3;
+    cursor: pointer;
+}
+
+.vf-close-button svg {
+    width: 19px;
+    height: 19px;
+}
+
+.vf-close-button:hover {
+    color: #bb4033;
+    background: #fdebea;
+}
+
+.vf-dialog-target {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 15px;
+    margin-bottom: 22px;
+    background: #f5f7f5;
+    border-radius: 10px;
+}
+
+.vf-dialog-target small {
+    color: #6e7a75;
+    font-size: 12px;
+}
+
+.vf-dialog-target strong {
+    color: #1e2925;
+    font-size: 15px;
+    overflow-wrap: anywhere;
+}
+
+/* ==========================================
+   REJECTION REASON RADIO OPTIONS
+   ========================================== */
+
+.vf-reason-options {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    padding: 0;
+    margin: 0 0 20px;
+    border: 0;
+}
+
+.vf-reason-options legend {
+    margin-bottom: 13px;
+    color: #555f59;
+    font-size: 14px;
+    font-weight: 650;
+}
+
+.vf-radio-option {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-height: 42px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: #1e2925;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.vf-radio-option:hover {
+    background: #f5f8f5;
+}
+
+.vf-radio-option:has(input:checked) {
+    color: #145740;
+    background: #e7f2eb;
+}
+
+.vf-radio-option input[type="radio"] {
+    appearance: auto;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    margin: 0;
+    flex-shrink: 0;
+    accent-color: #145740;
+    cursor: pointer;
+}
+
+.vf-dialog-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* ==========================================
+   PENDING VERIFICATION AND FOOTER
+   ========================================== */
+
+.vf-waiting {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    min-height: 50px;
+    padding: 15px;
+    border: 1px solid #f1dfb8;
+    border-radius: 10px;
+    background: #fff5df;
+    color: #956510;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.vf-waiting svg {
+    width: 19px;
+    height: 19px;
+    flex-shrink: 0;
+}
+
+.vf-footer-note {
+    margin: 14px 0 0;
+    color: #6e7a75;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.vf-page-footer {
+    margin-top: 24px;
+    text-align: center;
+    color: #6e7a75;
+    font-size: 12px;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 700px) {
+
+    .vf-body {
+        padding: 18px 12px;
+    }
+
+    .vf-panel {
+        padding: 20px;
+        border-radius: 14px;
+    }
+
+    .vf-document {
+        padding: 16px;
+    }
+
+    .vf-brand-header {
+        padding: 14px;
+    }
+
+    .vf-brand strong {
+        font-size: 18px;
+    }
+
+    .vf-brand small {
+        font-size: 10px;
+    }
+
+    .vf-status-header h1 {
+        font-size: 24px;
+    }
+
+    .vf-status-header p {
+        font-size: 13px;
+    }
+
+    .vf-document-title strong {
+        font-size: 14px;
+    }
+
+    .vf-upload {
+        padding: 20px 12px;
+    }
+
+    .vf-upload strong {
+        font-size: 15px;
+    }
+
+    .vf-admin-heading h1 {
+        font-size: 21px;
+    }
+
+    .vf-info-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .vf-final-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .vf-dialog {
+        padding: 20px;
+    }
+
+    .vf-dialog-actions .vf-button {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .vf-body *,
+    .vf-admin-page *,
+    .vf-dialog * {
+        transition: none !important;
+    }
+
+}

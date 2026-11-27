@@ -1,0 +1,1040 @@
+/* ==========================================
+   FIXMOTO SHOP PROFILE DESIGN
+   ========================================== */
+
+.sp-page {
+    --sp-green: #145740;
+    --sp-green-dark: #104633;
+    --sp-soft: #eaf3ed;
+    --sp-border: #e0e5e1;
+    --sp-text: #1e2925;
+    --sp-muted: #6e7a75;
+
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.sp-page *,
+.sp-dialog * {
+    box-sizing: border-box;
+}
+
+.sp-page [hidden],
+.sp-dialog [hidden] {
+    display: none !important;
+}
+
+/* ==========================================
+   WHITE PROFILE CARDS
+   ========================================== */
+
+.sp-card {
+    width: 100%;
+    min-width: 0;
+    padding: 24px;
+    border: 1px solid #e0e5e1;
+    border-radius: 16px;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+.sp-card h2 {
+    margin: 0;
+    color: #1e2925;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.sp-card h3 {
+    margin: 0;
+    color: #1e2925;
+    font-size: 18px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.sp-muted {
+    color: #6e7a75;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* ==========================================
+   SHOP PROFILE HEADER
+   ========================================== */
+
+.sp-shop-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.sp-shop-icon {
+    width: 66px;
+    height: 66px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    background: #e5efe8;
+    color: #145740;
+    border-radius: 15px;
+}
+
+.sp-shop-icon svg {
+    width: 32px;
+    height: 32px;
+}
+
+.sp-shop-title {
+    min-width: 0;
+}
+
+.sp-shop-title h2 {
+    font-size: 22px;
+}
+
+.sp-shop-title p {
+    margin: 6px 0;
+    color: #6e7a75;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.sp-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #145740;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.sp-verified svg {
+    width: 17px;
+    height: 17px;
+}
+
+.sp-inactive {
+    color: #9a681d;
+    font-size: 13px;
+}
+
+/* ==========================================
+   SECTION HEADINGS
+   ========================================== */
+
+.sp-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding-bottom: 20px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid #e5e9e5;
+}
+
+.sp-heading > span {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.sp-section-title {
+    margin-bottom: 20px;
+}
+
+.sp-section-title p {
+    margin: 9px 0 0;
+    color: #6e7a75;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* ==========================================
+   OWNER PROFILE INFORMATION
+   ========================================== */
+
+.sp-owner-profile {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 24px;
+}
+
+.sp-owner-profile > div:last-child {
+    min-width: 0;
+}
+
+.sp-owner-profile p {
+    margin: 7px 0 3px;
+    color: #6e7a75;
+    font-size: 14px;
+}
+
+.sp-avatar {
+    width: 60px;
+    height: 60px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    background: #e5efe8;
+    color: #145740;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.sp-avatar-large {
+    width: 86px;
+    height: 86px;
+}
+
+.sp-avatar img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.sp-avatar svg {
+    width: 29px;
+    height: 29px;
+}
+
+.sp-avatar-large svg {
+    width: 37px;
+    height: 37px;
+}
+
+.sp-information-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 30px;
+}
+
+.sp-information-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.sp-information-grid span {
+    color: #6e7a75;
+    font-size: 13px;
+}
+
+.sp-information-grid strong {
+    color: #1e2925;
+    font-size: 14px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+/* ==========================================
+   MECHANIC INFORMATION
+   ========================================== */
+
+.sp-member-list {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.sp-member-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 17px;
+    border: 1px solid #e0e5e1;
+    border-radius: 12px;
+    background: #ffffff;
+    min-width: 0;
+}
+
+.sp-member-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.sp-member-info h3 {
+    font-size: 16px;
+}
+
+.sp-member-info p {
+    margin: 5px 0;
+    color: #6e7a75;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.sp-member-contact {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: #1e2925;
+    overflow-wrap: anywhere;
+}
+
+.sp-member-contact svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: #145740;
+}
+
+.sp-member-status {
+    margin-top: 8px;
+}
+
+.sp-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 9px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.sp-status.active {
+    background: #e5f1e8;
+    color: #145740;
+}
+
+.sp-status.busy {
+    background: #fff3d9;
+    color: #926216;
+}
+
+.sp-status.inactive {
+    background: #f0f1f0;
+    color: #68736c;
+}
+
+.sp-manage-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    margin-top: 14px;
+    color: #145740;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.sp-manage-link:hover {
+    text-decoration: underline;
+}
+
+.sp-manage-link svg {
+    width: 15px;
+    height: 15px;
+}
+
+/* ==========================================
+   SHOP SERVICES
+   ========================================== */
+
+.sp-main-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.sp-service-list {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.sp-service-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 49px;
+    padding: 11px 14px;
+    border: 1px solid #e0e5e1;
+    border-radius: 10px;
+}
+
+.sp-service-row > svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: #145740;
+}
+
+.sp-service-row > span {
+    flex: 1;
+    min-width: 0;
+    color: #1e2925;
+    font-size: 14px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+.sp-service-row input[type="hidden"] {
+    display: none;
+}
+
+.sp-service-check {
+    color: #145740;
+}
+
+.sp-service-remove {
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    color: #6e7a75;
+    background: transparent;
+    cursor: pointer;
+}
+
+.sp-service-remove svg {
+    width: 16px;
+    height: 16px;
+}
+
+.sp-service-remove:hover {
+    color: #b94436;
+    background: #fdecea;
+}
+
+.sp-empty-services {
+    padding: 12px;
+    margin: 0 0 15px;
+    color: #6e7a75;
+    background: #f6f8f6;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+/* ==========================================
+   SHOP LOCATION
+   ========================================== */
+
+.sp-location-address {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 16px;
+    color: #6e7a75;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.sp-location-address svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: #145740;
+}
+
+.sp-card .sp-field {
+    margin-bottom: 16px;
+}
+
+#sp-location-status {
+    margin: 10px 0 0;
+}
+
+/* ==========================================
+   BUTTONS
+   ========================================== */
+
+.sp-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 12px 18px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-sizing: border-box;
+    text-decoration: none;
+    transition: background .2s ease,
+                border-color .2s ease;
+}
+
+.sp-button svg {
+    width: 18px;
+    height: 18px;
+}
+
+.sp-primary {
+    background: #145740;
+    color: #ffffff;
+}
+
+.sp-primary:hover {
+    background: #104633;
+    color: #ffffff;
+}
+
+.sp-outline {
+    background: #ffffff;
+    color: #145740;
+    border-color: #dce3de;
+}
+
+.sp-outline:hover {
+    background: #edf5ef;
+}
+
+.sp-soft {
+    background: #eaf3ed;
+    color: #145740;
+}
+
+.sp-soft:hover {
+    background: #dcece0;
+}
+
+.sp-dashed {
+    color: #145740;
+    background: #ffffff;
+    border: 1px dashed #145740;
+}
+
+.sp-dashed:hover {
+    background: #edf5ef;
+}
+
+.sp-full {
+    width: 100%;
+}
+
+.sp-save-button {
+    min-height: 55px;
+    font-size: 15px;
+}
+
+.sp-button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.sp-icon-button {
+    display: grid;
+    place-items: center;
+    width: 35px;
+    height: 35px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    color: #145740;
+    background: transparent;
+    cursor: pointer;
+}
+
+.sp-icon-button svg {
+    width: 18px;
+    height: 18px;
+}
+
+.sp-icon-button:hover {
+    background: #eaf3ed;
+}
+
+.sp-text-button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #145740;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.sp-text-button:hover {
+    text-decoration: underline;
+}
+
+.sp-button:focus-visible,
+.sp-icon-button:focus-visible,
+.sp-text-button:focus-visible {
+    outline: 3px solid #9bbdaa;
+    outline-offset: 2px;
+}
+
+/* ==========================================
+   EDIT AND ADD MODALS
+   ========================================== */
+
+.sp-dialog {
+    position: fixed;
+    inset: 0;
+    width: calc(100% - 32px);
+    max-width: 540px;
+    max-height: calc(100dvh - 32px);
+    padding: 0;
+    margin: auto;
+    border: 1px solid #dce3de;
+    border-radius: 17px;
+    background: #ffffff;
+    color: #1e2925;
+    overflow: auto;
+    box-sizing: border-box;
+    box-shadow: 0 20px 70px rgba(0, 0, 0, .20);
+}
+
+.sp-dialog:not([open]) {
+    display: none;
+}
+
+.sp-dialog::backdrop {
+    background: rgba(12, 35, 25, .55);
+    backdrop-filter: blur(3px);
+}
+
+.sp-dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 23px;
+    border-bottom: 1px solid #e5e9e5;
+}
+
+.sp-dialog-header h2 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.sp-dialog-header p {
+    margin: 6px 0 0;
+    color: #6e7a75;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.sp-dialog-form {
+    display: grid;
+    gap: 17px;
+    padding: 23px;
+}
+
+.sp-field {
+    display: grid;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e2925;
+}
+
+.sp-field input,
+.sp-field select,
+.sp-search-wrapper input {
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding: 12px;
+    border: 1px solid #dce3de;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #1e2925;
+    font-family: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.sp-field input:focus,
+.sp-field select:focus,
+.sp-search-wrapper input:focus {
+    outline: none;
+    border-color: #145740;
+    box-shadow: 0 0 0 3px rgba(20, 87, 64, .10);
+}
+
+.sp-field input[readonly] {
+    background: #f3f5f3;
+    color: #6e7a75;
+}
+
+.sp-field small {
+    color: #6e7a75;
+    font-weight: 400;
+    font-size: 11px;
+}
+
+.sp-dialog-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.sp-dialog-actions .sp-button {
+    width: 100%;
+}
+
+/* ==========================================
+   PROFILE PICTURE UPLOAD
+   ========================================== */
+
+.sp-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 20px;
+    border: 1px dashed #b7cbbd;
+    border-radius: 12px;
+    background: #f8fcf9;
+    color: #145740;
+    text-align: center;
+}
+
+.sp-upload svg {
+    width: 28px;
+    height: 28px;
+}
+
+.sp-upload strong {
+    font-size: 14px;
+}
+
+.sp-upload small {
+    color: #6e7a75;
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.sp-upload input[type="file"] {
+    width: 100%;
+    min-width: 0;
+    padding: 9px 0;
+    background: transparent;
+    border: 0;
+    font-size: 12px;
+    box-sizing: border-box;
+}
+
+.sp-upload input[type="file"]::file-selector-button {
+    border: 0;
+    border-radius: 7px;
+    padding: 9px 13px;
+    margin-right: 8px;
+    background: #145740;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+/* ==========================================
+   GPS MAP AND ADDRESS SEARCH
+   ========================================== */
+
+.sp-map-dialog {
+    max-width: 740px;
+}
+
+.sp-map-content {
+    padding: 23px;
+}
+
+.sp-search-wrapper {
+    position: relative;
+    margin-bottom: 15px;
+    z-index: 10;
+}
+
+.sp-map-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    max-height: 220px;
+    overflow-y: auto;
+    border: 1px solid #dce3de;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .12);
+}
+
+.sp-map-result {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border: 0;
+    border-bottom: 1px solid #e5e9e5;
+    background: #ffffff;
+    color: #1e2925;
+    text-align: left;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.sp-map-result:hover {
+    background: #eaf3ed;
+}
+
+.sp-map-results p {
+    margin: 0;
+    padding: 12px;
+    font-size: 13px;
+    color: #6e7a75;
+}
+
+.sp-map {
+    width: 100%;
+    height: 350px;
+    border-radius: 12px;
+    border: 1px solid #dce3de;
+    background: #e5eae5;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.sp-map-selection {
+    display: grid;
+    gap: 8px;
+    margin-top: 15px;
+    padding: 15px;
+    border: 1px solid #d4e5da;
+    border-radius: 10px;
+    background: #f1f7f2;
+}
+
+.sp-map-selection small {
+    color: #6e7a75;
+    font-size: 12px;
+}
+
+.sp-map-selection strong {
+    color: #145740;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.sp-map-coordinates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.sp-map-coordinates > div {
+    display: grid;
+    gap: 4px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.sp-map-content > p {
+    margin: 14px 0;
+}
+
+/* ==========================================
+   MECHANIC TEAM TABLE
+   ========================================== */
+
+.sp-page .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.sp-page .table-wrap table {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: collapse;
+}
+
+.sp-page .table-wrap th {
+    padding: 13px;
+    color: #6e7a75;
+    background: #f6f8f6;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.sp-page .table-wrap td {
+    padding: 15px 13px;
+    border-bottom: 1px solid #e5e9e5;
+    vertical-align: middle;
+    font-size: 13px;
+}
+
+.sp-page .table-wrap tr:last-child td {
+    border-bottom: none;
+}
+
+.sp-page .table-wrap tbody tr:hover {
+    background: #fafcfb;
+}
+
+.sp-page .table-wrap .sp-avatar {
+    width: 42px;
+    height: 42px;
+}
+
+.sp-page .table-wrap .sp-avatar svg {
+    width: 21px;
+    height: 21px;
+}
+
+.sp-page .table-wrap .sp-button {
+    min-height: 36px;
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+/* ==========================================
+   ERROR AND EMPTY STATES
+   ========================================== */
+
+.sp-error {
+    padding: 15px;
+    border: 1px solid #f3c4c4;
+    border-radius: 10px;
+    background: #fdecec;
+    color: #a12d2d;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.sp-form-error {
+    margin: 0;
+    color: #b94436;
+    font-size: 13px;
+}
+
+.sp-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 110px;
+    color: #6e7a75;
+    font-size: 13px;
+}
+
+.sp-empty svg {
+    width: 28px;
+    height: 28px;
+    color: #145740;
+}
+
+/* ==========================================
+   MOBILE RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 900px) {
+
+    .sp-page {
+        padding: 20px 18px;
+    }
+
+    .sp-card {
+        padding: 20px;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .sp-page {
+        padding: 16px;
+        gap: 14px;
+    }
+
+    .sp-card {
+        padding: 17px;
+        border-radius: 13px;
+    }
+
+    .sp-card h2 {
+        font-size: 17px;
+    }
+
+    .sp-shop-title h2 {
+        font-size: 18px;
+    }
+
+    .sp-shop-icon {
+        width: 52px;
+        height: 52px;
+    }
+
+    .sp-information-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .sp-member-card {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .sp-avatar {
+        width: 48px;
+        height: 48px;
+    }
+
+    .sp-avatar-large {
+        width: 72px;
+        height: 72px;
+    }
+
+    .sp-heading {
+        margin-bottom: 17px;
+        padding-bottom: 16px;
+    }
+
+    .sp-dialog-form,
+    .sp-dialog-header,
+    .sp-map-content {
+        padding: 17px;
+    }
+
+    .sp-map {
+        height: 270px;
+    }
+
+    .sp-dialog-actions {
+        gap: 8px;
+    }
+
+    .sp-dialog-actions .sp-button {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+
+    .sp-heading > .sp-button {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .sp-page *,
+    .sp-dialog * {
+        transition: none !important;
+    }
+
+}
