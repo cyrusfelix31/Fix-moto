@@ -5,10 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\MechanicDocument;
 use App\Models\User;
+use App\Mail\MechanicAccountSetupMail;
+use App\Notifications\MechanicVerificationUpdated;
+use App\Notifications\MechanicDocumentResubmitted;
 use App\Services\ShopDocumentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -58,8 +63,11 @@ class ShopVerificationController extends Controller
 
         if (
             $profile->is_verified
-            && $profile->verification_status === 'approved'
+            && $profile->verification_status === 'fully_verified'
         ) {
+            if ($user->password_setup_required) {
+                return redirect()->route('mechanic.password.setup.notice');
+            }
             return redirect()->route(
                 'mechanic.dashboard'
             );
@@ -75,18 +83,19 @@ class ShopVerificationController extends Controller
             $documentService->replacementTypes(
                 $profile
             );
+        if ($profile->verification_status === 'rejected') {
+            $replacementTypes = array_values(array_intersect(
+                $replacementTypes,
+                $profile->documents->where('status', 'rejected')->pluck('document_type')->all()
+            ));
+        }
 
-        $canResubmit =
-
-            $profile->verification_status === 'rejected'
-
-            || (
-
-                $profile->verification_status === 'pending'
-
-                && $profile->documents->isEmpty()
-
-            );
+        $canResubmit = (in_array($profile->verification_status, [
+            'partially_verified', 'under_review', 'pending_verification',
+        ], true) && ($replacementTypes !== [] || $profile->documents->isEmpty()))
+            || ($profile->verification_status === 'rejected'
+                && $profile->documents->contains('status', 'rejected'));
+        $progress = $profile->verificationProgress();
 
         return view(
             'auth.pending-verification',
@@ -94,7 +103,8 @@ class ShopVerificationController extends Controller
                 'profile',
                 'latestVerification',
                 'replacementTypes',
-                'canResubmit'
+                'canResubmit',
+                'progress'
             )
         );
     }
@@ -123,16 +133,16 @@ class ShopVerificationController extends Controller
 
         $counts = [
 
-            'pending' => $shops->filter(
-                fn ($shop) =>
-                    $shop->mechanicProfile
-                        ->verification_status === 'pending'
-            )->count(),
+            'pending' => $shops->filter(fn ($shop) => in_array(
+                $shop->mechanicProfile->verification_status,
+                ['pending_verification', 'under_review', 'partially_verified'],
+                true
+            ))->count(),
 
             'approved' => $shops->filter(
                 fn ($shop) =>
                     $shop->mechanicProfile
-                        ->verification_status === 'approved'
+                        ->verification_status === 'fully_verified'
             )->count(),
 
             'rejected' => $shops->filter(
@@ -175,6 +185,14 @@ class ShopVerificationController extends Controller
 
             ->firstOrFail();
 
+        if ($profile->verification_status === 'pending_verification') {
+            $profile->update(['verification_status' => 'under_review']);
+            $user->notify(new MechanicVerificationUpdated(
+                'under_review',
+                'An administrator has started reviewing your shop documents.'
+            ));
+        }
+
         $latestVerification = $user
             ->mechanicVerifications()
             ->orderByDesc('reviewed_at')
@@ -183,6 +201,7 @@ class ShopVerificationController extends Controller
 
         $rejectionReasons =
             self::REJECTION_REASONS;
+        $progress = $profile->verificationProgress();
 
         return view(
             'admin.verification-details',
@@ -190,7 +209,8 @@ class ShopVerificationController extends Controller
                 'user',
                 'profile',
                 'latestVerification',
-                'rejectionReasons'
+                'rejectionReasons',
+                'progress'
             )
         );
     }
@@ -275,13 +295,15 @@ class ShopVerificationController extends Controller
             $request
         );
 
+        $setupLinkNeeded = false;
         DB::transaction(function () use (
 
             $request,
 
             $document,
 
-            $data
+            $data,
+            &$setupLinkNeeded
 
         ) {
 
@@ -293,7 +315,7 @@ class ShopVerificationController extends Controller
                 ->firstOrFail();
 
             abort_unless(
-                $profile->verification_status === 'pending',
+                in_array($profile->verification_status, ['under_review', 'partially_verified', 'pending_verification'], true),
                 409,
                 'This application is not pending.'
             );
@@ -371,6 +393,18 @@ class ShopVerificationController extends Controller
 
             ]);
 
+            $status = $profile->refreshVerificationStatus();
+            $setupLinkNeeded = $status === 'fully_verified'
+                && $profile->mechanic->password_setup_required;
+            $profile->mechanic->notify(new MechanicVerificationUpdated(
+                $status,
+                $approved
+                    ? $document->label.' was approved.'
+                    : $document->label.' was rejected. Please review the reason and upload a replacement.',
+                $document->document_type,
+                $approved ? null : $data['reason'],
+            ));
+
             AuditLog::record(
 
                 $request->user(),
@@ -397,6 +431,10 @@ class ShopVerificationController extends Controller
             );
 
         });
+
+        if ($setupLinkNeeded) {
+            $this->sendPasswordSetupLink($document->mechanicProfile->mechanic);
+        }
 
         return back()->with(
 
@@ -432,13 +470,15 @@ class ShopVerificationController extends Controller
             $request
         );
 
+        $setupLinkNeeded = false;
         DB::transaction(function () use (
 
             $request,
 
             $user,
 
-            $data
+            $data,
+            &$setupLinkNeeded
 
         ) {
 
@@ -450,7 +490,7 @@ class ShopVerificationController extends Controller
                 ->firstOrFail();
 
             abort_unless(
-                $profile->verification_status === 'pending',
+                in_array($profile->verification_status, ['under_review', 'partially_verified', 'pending_verification'], true),
                 409,
                 'This application has already been reviewed.'
             );
@@ -508,7 +548,7 @@ class ShopVerificationController extends Controller
 
                 'verification_status' =>
                     $approved
-                        ? 'approved'
+                        ? 'fully_verified'
                         : 'rejected',
 
                 'is_verified' => $approved,
@@ -516,6 +556,7 @@ class ShopVerificationController extends Controller
                 'is_online' => false,
 
             ]);
+            $setupLinkNeeded = $approved && $user->password_setup_required;
 
             $user->mechanicVerifications()->create([
 
@@ -537,6 +578,14 @@ class ShopVerificationController extends Controller
                 'reviewed_at' => now(),
 
             ]);
+
+            $user->notify(new MechanicVerificationUpdated(
+                $approved ? 'fully_verified' : 'rejected',
+                $approved
+                    ? 'Your shop verification is complete. You can now go online and accept service requests.'
+                    : 'Your application was denied. Review the administrator feedback and rejected document reasons.',
+                reason: $approved ? null : $data['reason'],
+            ));
 
             AuditLog::record(
 
@@ -561,6 +610,10 @@ class ShopVerificationController extends Controller
             );
 
         });
+
+        if ($setupLinkNeeded) {
+            $this->sendPasswordSetupLink($user);
+        }
 
         return redirect()
 
@@ -632,17 +685,9 @@ class ShopVerificationController extends Controller
 
                     ->firstOrFail();
 
-                $eligible =
-
-                    $lockedProfile->verification_status === 'rejected'
-
-                    || (
-
-                        $lockedProfile->verification_status === 'pending'
-
-                        && !$lockedProfile->documents()->exists()
-
-                    );
+                $eligible = in_array($lockedProfile->verification_status, [
+                    'under_review', 'partially_verified', 'pending_verification',
+                ], true) || $lockedProfile->verification_status === 'rejected';
 
                 abort_unless(
                     $eligible,
@@ -650,27 +695,42 @@ class ShopVerificationController extends Controller
                     'This application cannot be resubmitted.'
                 );
 
+                if ($lockedProfile->verification_status === 'rejected') {
+                    abort_unless(
+                        $lockedProfile->documents()->where('status', 'rejected')->exists(),
+                        409,
+                        'Only rejected documents can be resubmitted.'
+                    );
+                }
+
                 $types =
                     $documentService->replacementTypes(
                         $lockedProfile
                     );
 
+                if ($lockedProfile->verification_status === 'rejected') {
+                    $types = array_values(array_intersect(
+                        $types,
+                        $lockedProfile->documents()
+                            ->where('status', 'rejected')
+                            ->pluck('document_type')
+                            ->all()
+                    ));
+                }
+
+                abort_unless($types !== [], 409, 'There are no rejected or missing documents to replace.');
+
+                $submittedTypes = array_values(array_filter(
+                    $types,
+                    fn (string $type): bool => $request->hasFile($type)
+                ));
+                abort_unless($submittedTypes !== [], 422, 'Choose at least one rejected document to re-upload.');
+
                 $rules = $documentService->rules(
                     false,
-                    $types
+                    $submittedTypes
                 );
-
-                $rules['correction_note'] = [
-
-                    empty($types)
-                        ? 'required'
-                        : 'nullable',
-
-                    'string',
-
-                    'max:1000',
-
-                ];
+                $rules['correction_note'] = ['nullable', 'string', 'max:1000'];
 
                 $data = $request->validate(
                     $rules
@@ -678,7 +738,7 @@ class ShopVerificationController extends Controller
 
                 $documents = $documentService->store(
                     $request,
-                    $types
+                    $submittedTypes
                 );
 
                 foreach (
@@ -722,15 +782,28 @@ class ShopVerificationController extends Controller
                 // Approved documents that were not
                 // replaced retain their existing status.
 
+                $approvedDocumentsRemain = $lockedProfile->documents()
+                    ->where('status', 'approved')
+                    ->whereNotIn('document_type', $submittedTypes)
+                    ->exists();
+
+                $newStatus = $approvedDocumentsRemain ? 'partially_verified' : 'pending_verification';
                 $lockedProfile->update([
-
-                    'verification_status' => 'pending',
-
+                    'verification_status' => $newStatus,
                     'is_verified' => false,
-
                     'is_online' => false,
-
                 ]);
+                $user->notify(new MechanicVerificationUpdated(
+                    $newStatus,
+                    'Your replacement documents were submitted and are waiting for review.'
+                ));
+                User::query()->where('role', 'admin')->get()->each(
+                    fn (User $admin) => $admin->notify(new MechanicDocumentResubmitted(
+                        $user->id,
+                        $lockedProfile->shop_name,
+                        array_map(fn (string $type): string => MechanicDocument::TYPES[$type] ?? $type, $submittedTypes),
+                    ))
+                );
 
                 AuditLog::record(
 
@@ -741,7 +814,7 @@ class ShopVerificationController extends Controller
                     details: [
 
                         'replaced_documents' =>
-                            implode(', ', $types),
+                            implode(', ', $submittedTypes),
 
                         'correction_note' =>
                             $data['correction_note'] ?? null,
@@ -909,5 +982,19 @@ class ShopVerificationController extends Controller
             403
 
         );
+    }
+
+    private function sendPasswordSetupLink(User $user): void
+    {
+        if (!$user->password_setup_required || !$user->mechanicProfile?->is_verified) {
+            return;
+        }
+
+        try {
+            $token = Password::broker()->createToken($user);
+            Mail::to($user->email)->send(new MechanicAccountSetupMail($user, $token));
+        } catch (Throwable $exception) {
+            report($exception);
+        }
     }
 }

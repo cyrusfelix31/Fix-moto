@@ -27,7 +27,7 @@ class RiderController extends Controller
                 ->where('is_online', true)
                 ->whereNotNull('latitude')
                 ->whereNotNull('longitude')
-                ->whereHas('activeMembers')
+                ->whereHas('availableMembers')
                 ->count(),
 
             'activeRequestCount' => $user->riderRequests()
@@ -95,7 +95,7 @@ class RiderController extends Controller
                     ->whereHas('mechanicProfile', fn ($query) => $query
                         ->where('is_verified', true)
                         ->where('is_online', true)
-                        ->whereHas('activeMembers'))
+                        ->whereHas('availableMembers'))
                     ->pluck('name'))
                 ->unique()->values(),
         ]);
@@ -165,7 +165,7 @@ class RiderController extends Controller
                 ->whereHas('mechanicProfile', fn ($query) => $query
                     ->where('is_verified', true)
                     ->where('is_online', true)
-                    ->whereHas('activeMembers'))
+                    ->whereHas('availableMembers'))
                 ->pluck('name'))
             ->unique()->all();
 
@@ -269,11 +269,11 @@ class RiderController extends Controller
                 ->where('is_online', true)
                 ->whereNotNull('latitude')
                 ->whereNotNull('longitude')
-                ->whereHas('activeMembers')
+                ->whereHas('availableMembers')
                 ->with('mechanic')
                 ->get()
                 ->filter(fn (MechanicProfile $profile): bool =>
-                    $profile->verification_status === 'approved'
+                    $profile->verification_status === 'fully_verified'
                     && \App\Services\ShopServiceCatalog::supports(
                         $profile->services ?? [],
                         $selectedServices
@@ -371,8 +371,7 @@ class RiderController extends Controller
         );
     }
 
-    // Only the rider can confirm arrival,
-    // repairing and completion.
+    // Riders confirm repair start and service completion in order.
     public function updateStatus(
         Request $request,
         ServiceRequest $serviceRequest
@@ -385,8 +384,10 @@ class RiderController extends Controller
         $data = $request->validate([
             'status' => [
                 'required',
-                'in:arrived,repairing,completed',
+                'in:repairing,completed',
             ],
+
+            'confirmed' => ['required', 'accepted'],
 
             'note' => [
                 'nullable',
@@ -422,7 +423,6 @@ class RiderController extends Controller
             );
 
             $allowed = [
-                'on_the_way' => 'arrived',
                 'arrived' => 'repairing',
                 'diagnosing' => 'repairing',
                 'repairing' => 'completed',
@@ -456,7 +456,6 @@ class RiderController extends Controller
         });
 
         $messages = [
-            'arrived' => 'Mechanic arrival confirmed.',
             'repairing' => 'Repair started successfully.',
             'completed' => 'Service completed successfully.',
         ];

@@ -11,6 +11,10 @@ class MechanicProfile extends Model
 {
     use HasFactory;
 
+    public const ACTIVE_SERVICE_STATUSES = [
+        'accepted', 'on_the_way', 'arrived', 'diagnosing', 'repairing',
+    ];
+
     protected $fillable = [
         'user_id',
         'shop_name',
@@ -48,6 +52,30 @@ class MechanicProfile extends Model
     public function activeMembers(): HasMany
     {
         return $this->members()->where('is_active', true);
+    }
+
+    public function availableMembers(): HasMany
+    {
+        return $this->members()
+            ->where('is_active', true)
+            ->whereDoesntHave('serviceRequests', fn ($query) => $query->whereIn('service_status', self::ACTIVE_SERVICE_STATUSES));
+    }
+
+    public function availableMechanicCount(): int
+    {
+        $freeMembers = $this->availableMembers()->count();
+        $waitingForAssignment = \App\Models\ServiceRequest::query()
+            ->where('mechanic_id', $this->user_id)
+            ->whereNull('mechanic_shop_member_id')
+            ->whereIn('service_status', self::ACTIVE_SERVICE_STATUSES)
+            ->count();
+
+        return max(0, $freeMembers - $waitingForAssignment);
+    }
+
+    public function hasAvailableMechanic(): bool
+    {
+        return $this->availableMechanicCount() > 0;
     }
 
     public function shopServices(): HasMany
@@ -103,6 +131,58 @@ class MechanicProfile extends Model
         }
 
         return true;
+    }
+
+    public function verificationProgress(): array
+    {
+        $documents = $this->documents()->get()->keyBy('document_type');
+        $total = count(MechanicDocument::TYPES);
+        $approved = 0;
+
+        foreach (MechanicDocument::TYPES as $type => $label) {
+            $document = $documents->get($type);
+            if ($document?->status === 'approved' && !$document->isExpired()) {
+                $approved++;
+            }
+        }
+
+        return [
+            'approved' => $approved,
+            'total' => $total,
+            'percentage' => $total ? (int) round($approved / $total * 100) : 0,
+        ];
+    }
+
+    public function refreshVerificationStatus(): string
+    {
+        $documents = $this->documents()->get()->keyBy('document_type');
+        $approved = 0;
+        $complete = true;
+
+        foreach (MechanicDocument::TYPES as $type => $label) {
+            $document = $documents->get($type);
+            if ($document?->status === 'approved' && !$document->isExpired()) {
+                $approved++;
+            } else {
+                $complete = false;
+            }
+        }
+
+        $hasRejected = $documents->contains(
+            fn (MechanicDocument $document): bool => $document->status === 'rejected'
+        );
+
+        $status = $complete
+            ? 'fully_verified'
+            : (($approved > 0 || $hasRejected) ? 'partially_verified' : 'under_review');
+
+        $this->update([
+            'verification_status' => $status,
+            'is_verified' => $status === 'fully_verified',
+            'is_online' => $status === 'fully_verified' ? $this->is_online : false,
+        ]);
+
+        return $status;
     }
 
     public function distanceTo(

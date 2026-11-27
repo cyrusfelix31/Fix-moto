@@ -19,6 +19,8 @@ use Illuminate\Notifications\Notifiable;
     'phone',
     'profile_picture',
     'avatar_path',
+    'password_setup_required',
+    'profile_photo_setup_required',
 ])]
 
 #[Hidden([
@@ -37,6 +39,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'password_setup_required' => 'boolean',
+            'profile_photo_setup_required' => 'boolean',
             'is_suspended' => 'boolean',
             'last_login_at' => 'datetime',
         ];
@@ -87,7 +91,7 @@ class User extends Authenticatable
                         ->where('is_verified', false)
                         ->where(
                             'verification_status',
-                            'pending'
+                            'pending_verification'
                         );
                 }
             );

@@ -335,9 +335,9 @@ class ShopProfileController extends Controller
             (float) $data['longitude']
         );
 
-        if (!$match['within_city']) {
+        if (!$match['within_city'] || $match['status'] !== 'matched') {
             throw ValidationException::withMessages([
-                'latitude' => 'Shop location must be within Calapan City.',
+                'latitude' => 'Shop location must match a known barangay within Calapan City.',
             ]);
         }
 

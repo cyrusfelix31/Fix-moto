@@ -8,7 +8,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Verification Status | FIXMOTO</title>
+    <title>Verification Status | FixMoto</title>
 
     @vite([
         'resources/css/app.css',
@@ -25,6 +25,13 @@
     $status = $profile->verification_status;
 
     $isRejected = $status === 'rejected';
+    $statusLabels = [
+        'pending_verification' => 'Pending Verification',
+        'under_review' => 'Under Review',
+        'partially_verified' => 'Partially Verified — Resubmission Required',
+        'fully_verified' => 'Fully Verified',
+        'rejected' => 'Rejected',
+    ];
 
     $documents = $profile->documents
         ->keyBy('document_type');
@@ -47,19 +54,11 @@
 
             <div class="vf-brand">
 
-                <div class="vf-logo">
+                <img class="vf-brand-logo"
+                     src="{{ asset('images/fixmoto-login-logo-edited.png') }}?v=2"
+                     alt="FixMoto">
 
-                    <i data-lucide="wrench"></i>
-
-                </div>
-
-                <div>
-
-                    <strong>FIXMOTO</strong>
-
-                    <small>Mechanic Shop Verification</small>
-
-                </div>
+                <small>Mechanic Shop Verification</small>
 
             </div>
 
@@ -89,19 +88,15 @@
             <div class="vf-status-header">
 
                 <div class="vf-status-icon
-                    {{ $isRejected ? 'vf-red-icon' : 'vf-amber-icon' }}">
+                    {{ $isRejected ? 'vf-red-icon' : ($status === 'fully_verified' ? 'vf-green-icon' : 'vf-amber-icon') }}">
 
-                    <i data-lucide="{{ $isRejected
-                        ? 'circle-x'
-                        : 'clock-3' }}"></i>
+                    <i data-lucide="{{ $isRejected ? 'circle-x' : ($status === 'fully_verified' ? 'shield-check' : 'clock-3') }}"></i>
 
                 </div>
 
                 <h1>
 
-                    {{ $isRejected
-                        ? 'Verification Rejected'
-                        : 'Pending Verification' }}
+                    {{ $statusLabels[$status] ?? 'Pending Verification' }}
 
                 </h1>
 
@@ -112,16 +107,54 @@
                         Your application requires corrections
                         before it can be approved.
 
-                    @else
+                    @elseif ($status === 'partially_verified')
+
+                        Some requirements are approved. Upload only rejected,
+                        expired, or missing documents; approved documents remain on file.
+
+                    @elseif ($status === 'under_review')
 
                         Your application is currently being
-                        reviewed by the FIXMOTO administrator.
+                        reviewed by the FixMoto administrator.
+
+                    @else
+
+                        Your requirements were submitted successfully and are waiting for administrator review.
 
                     @endif
 
                 </p>
 
             </div>
+
+            @php
+                $verificationNotices = auth()->user()->notifications()->latest()->limit(3)->get();
+            @endphp
+            @if($verificationNotices->isNotEmpty())
+                <section class="vf-notification-list" aria-label="Verification notifications">
+                    <h2>Verification updates</h2>
+                    @foreach($verificationNotices as $notice)
+                        <article class="vf-notification-item">
+                            <strong>{{ ucfirst(str_replace('_', ' ', $notice->data['status'] ?? 'Status update')) }}</strong>
+                            <p>{{ $notice->data['message'] ?? 'Your verification status was updated.' }}</p>
+                            @if(!empty($notice->data['reason']))
+                                <p class="vf-preserve-lines">{{ $notice->data['reason'] }}</p>
+                            @endif
+                            <small>{{ $notice->created_at?->diffForHumans() }}</small>
+                        </article>
+                    @endforeach
+                </section>
+            @endif
+
+            <section class="vf-progress-card" aria-label="Verification progress">
+                <div class="vf-progress-heading">
+                    <strong>Verification progress</strong>
+                    <span>{{ $progress['percentage'] }}% — {{ $progress['approved'] }} of {{ $progress['total'] }} requirements approved</span>
+                </div>
+                <div class="vf-progress-track" role="progressbar" aria-valuenow="{{ $progress['percentage'] }}" aria-valuemin="0" aria-valuemax="100">
+                    <span style="width: {{ $progress['percentage'] }}%"></span>
+                </div>
+            </section>
 
 
             <!-- SUCCESS MESSAGE -->
@@ -180,7 +213,7 @@
 
                 <div>
 
-                    <h3>{{ $profile->shop_name }}</h3>
+                                <h3>{{ $profile->shop_name ?: 'Your mechanic shop' }}</h3>
 
                     <p>{{ $profile->service_address }}</p>
 
@@ -256,20 +289,7 @@
                             $isExpired =
                                 $document?->isExpired() ?? false;
 
-                            $documentStatus =
-                                $document?->status ?? 'missing';
-
-                            if ($isExpired) {
-
-                                $documentStatus = 'expired';
-
-                            } elseif (
-                                $needsReplacement
-                                && $documentStatus === 'approved'
-                            ) {
-
-                                $documentStatus = 'invalid';
-                            }
+                            $documentStatus = $document?->status ?? 'pending';
 
                             $reason = trim(
                                 $document?->rejection_reason ?? ''
@@ -444,7 +464,7 @@
 
                                             <strong>
 
-                                                Upload Replacement Document
+                                                Re-upload Document
 
                                             </strong>
 
@@ -463,8 +483,6 @@
                                                 accept=".pdf,.jpg,.jpeg,.png"
 
                                                 data-vf-upload
-
-                                                required
 
                                             >
 
@@ -533,7 +551,7 @@
                                                             true
                                                         )
                                                     )
-                                                        required
+                                                    data-vf-expiration-required
                                                     @endif
 
                                                 >
@@ -600,17 +618,7 @@
 
                         <span>
 
-                            Correction note
-
-                            @if (empty($replacementTypes))
-
-                                *
-
-                            @else
-
-                                (Optional)
-
-                            @endif
+                            Correction note (Optional)
 
                         </span>
 
@@ -623,12 +631,6 @@
                             maxlength="1000"
 
                             placeholder="Explain the corrections you have made..."
-
-                            @if (empty($replacementTypes))
-
-                                required
-
-                            @endif
 
                         >{{ old('correction_note') }}</textarea>
 
@@ -672,7 +674,7 @@
 
         <footer class="vf-page-footer">
 
-            FIXMOTO &copy; {{ date('Y') }}
+            FixMoto &copy; {{ date('Y') }}
 
             — Calapan City, Oriental Mindoro
 
@@ -778,9 +780,28 @@
                         'vf-submit-button'
                     );
 
+                form?.querySelectorAll('[data-vf-expiration-required]').forEach(input => {
+                    const file = form.querySelector(`[name="${CSS.escape(input.name.replace(/_expiration$/, ''))}"]`);
+                    const sync = () => { input.required = Boolean(file?.files?.length); };
+                    file?.addEventListener('change', sync);
+                    sync();
+                });
+
                 form?.addEventListener(
                     'submit',
-                    function () {
+                    function (event) {
+
+                        const uploads = [...form.querySelectorAll('[data-vf-upload]')];
+                        if (!uploads.some(input => input.files.length > 0)) {
+                            event.preventDefault();
+                            const first = uploads[0];
+                            if (first) {
+                                first.setCustomValidity('Choose at least one rejected document to re-upload.');
+                                first.reportValidity();
+                                first.addEventListener('change', () => first.setCustomValidity(''), {once: true});
+                            }
+                            return;
+                        }
 
                         if (button) {
 

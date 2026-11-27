@@ -7,9 +7,13 @@ use App\Models\DispatchAttempt;
 use App\Models\MechanicProfile;
 use App\Models\MechanicShopMember;
 use App\Models\MechanicShopService;
+use App\Models\MechanicLocation;
 use App\Models\ServiceRequest;
+use App\Notifications\MechanicAvailabilityNotice;
 use App\Services\BarangayLocator;
 use App\Services\ShopServiceMatcher;
+use App\Services\GpsDistance;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -49,6 +53,7 @@ class MechanicController extends Controller
                 ->count(),
 
             'teamMemberCount' => $profile->members()->count(),
+            'availableMemberCount' => $profile->availableMechanicCount(),
         ]);
     }
 
@@ -86,12 +91,7 @@ class MechanicController extends Controller
                 ->latest()
                 ->get(),
 
-            'availableMembers' => $profile->activeMembers()
-                ->whereDoesntHave('serviceRequests', fn ($query) => $query->whereIn(
-                    'service_status',
-                    self::ACTIVE_SERVICE_STATUSES
-                )
-                )
+            'availableMembers' => $profile->availableMembers()
                 ->orderBy('name')
                 ->get(),
 
@@ -158,34 +158,29 @@ class MechanicController extends Controller
             ->mechanicProfile()
             ->firstOrFail();
 
-        abort_if(
-            ! $profile->is_verified,
-            403,
-            'Your account must be verified first.'
-        );
-
-        if (
-            ! $profile->is_online &&
-            ! $profile->activeMembers()->exists()
-        ) {
-            return back()->withErrors([
-                'team' => 'Add at least one active mechanic first.',
-            ]);
-        }
-
-        DB::transaction(function () use ($profile, $request): void {
-            $profile->update([
-                'is_online' => ! $profile->is_online,
-            ]);
-
+        $updated = DB::transaction(function () use ($profile, $request): ?bool {
+            $lockedProfile = MechanicProfile::query()->whereKey($profile->id)->lockForUpdate()->firstOrFail();
+            abort_if(!$lockedProfile->is_verified || $lockedProfile->verification_status !== 'fully_verified', 403, 'Your account must be verified first.');
+            $goingOnline = !$lockedProfile->is_online;
+            if ($goingOnline && !$lockedProfile->hasAvailableMechanic()) {
+                return false;
+            }
+            $lockedProfile->update(['is_online' => $goingOnline]);
             AuditLog::record(
                 $request->user(),
                 'mechanic.availability_updated',
-                details: [
-                    'is_online' => $profile->is_online,
-                ]
+                details: ['is_online' => $lockedProfile->is_online]
             );
+
+            return true;
         });
+
+        if (!$updated) {
+            $this->notifyNoActiveMechanics($request);
+            return back()->withErrors([
+                'team' => 'Your shop needs at least one active, available mechanic before it can go online.',
+            ]);
+        }
 
         return back()->with(
             'success',
@@ -279,9 +274,9 @@ class MechanicController extends Controller
             (float) $data['longitude']
         );
 
-        if (! $locationMatch['within_city']) {
+        if (! $locationMatch['within_city'] || $locationMatch['status'] !== 'matched') {
             throw ValidationException::withMessages([
-                'latitude' => 'Choose a shop location within Calapan City boundaries.',
+                'latitude' => 'Choose a precise shop location inside a known Calapan City barangay.',
             ]);
         }
 
@@ -335,9 +330,16 @@ class MechanicController extends Controller
         ]);
 
         if ($request->hasFile('owner_photo')) {
-            $request->user()->update([
-                'avatar_path' => $request->file('owner_photo')->store('shop-profiles/owners', 'public'),
-            ]);
+            $owner = $request->user();
+            $oldPath = $owner->avatar_path;
+            $path = $request->file('owner_photo')->store('shop-profiles/owners', 'public');
+            if (!$path) {
+                return back()->withErrors(['owner_photo' => 'The profile photo could not be saved.']);
+            }
+            $owner->update(['avatar_path' => $path]);
+            if ($oldPath && str_starts_with($oldPath, 'shop-profiles/owners/')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+            }
         }
 
         if ($request->hasFile('shop_logo')) {
@@ -369,17 +371,25 @@ class MechanicController extends Controller
         unset($data['avatar']);
 
         $updated = DB::transaction(function () use ($profile, $member, $data): bool {
+            MechanicProfile::query()->whereKey($profile->id)->lockForUpdate()->firstOrFail();
             $member = $profile->members()->whereKey($member->id)->lockForUpdate()->firstOrFail();
             if (! (bool) $data['is_active'] && $member->serviceRequests()->whereIn('service_status', self::ACTIVE_SERVICE_STATUSES)->exists()) {
                 return false;
             }
             $member->update($data);
+            if (!$profile->hasAvailableMechanic()) {
+                $profile->update(['is_online' => false]);
+            }
 
             return true;
         });
 
         if (! $updated) {
             return back()->withErrors(['team' => 'This mechanic has an active request and cannot be made unavailable.']);
+        }
+
+        if (!$profile->hasAvailableMechanic()) {
+            $this->notifyNoActiveMechanics($request);
         }
 
         return back()->with('success', 'Mechanic information updated.');
@@ -391,6 +401,7 @@ class MechanicController extends Controller
         abort_if($member->mechanic_profile_id !== $profile->id, 404);
 
         $removed = DB::transaction(function () use ($member, $profile): bool {
+            MechanicProfile::query()->whereKey($profile->id)->lockForUpdate()->firstOrFail();
             $member = $profile->members()->whereKey($member->id)->lockForUpdate()->firstOrFail();
 
             if ($member->serviceRequests()->whereIn('service_status', self::ACTIVE_SERVICE_STATUSES)->exists()) {
@@ -399,11 +410,19 @@ class MechanicController extends Controller
 
             $member->delete();
 
+            if (!$profile->hasAvailableMechanic()) {
+                $profile->update(['is_online' => false]);
+            }
+
             return true;
         });
 
         if (! $removed) {
             return back()->withErrors(['team' => 'A mechanic assigned to an active request cannot be removed.']);
+        }
+
+        if (!$profile->hasAvailableMechanic()) {
+            $this->notifyNoActiveMechanics($request);
         }
 
         return back()->with('success', 'Mechanic removed from your shop.');
@@ -468,6 +487,7 @@ class MechanicController extends Controller
             $profile,
             $request
         ): bool {
+            MechanicProfile::query()->whereKey($profile->id)->lockForUpdate()->firstOrFail();
             $member = MechanicShopMember::whereKey($member->id)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -488,13 +508,8 @@ class MechanicController extends Controller
                 'is_active' => ! $member->is_active,
             ]);
 
-            if (
-                ! $member->is_active &&
-                ! $profile->activeMembers()->exists()
-            ) {
-                $profile->update([
-                    'is_online' => false,
-                ]);
+            if (!$profile->hasAvailableMechanic()) {
+                $profile->update(['is_online' => false]);
             }
 
             AuditLog::record(
@@ -513,6 +528,10 @@ class MechanicController extends Controller
             return back()->withErrors([
                 'team' => 'A mechanic with an active request cannot be deactivated.',
             ]);
+        }
+
+        if (!$profile->hasAvailableMechanic()) {
+            $this->notifyNoActiveMechanics($request);
         }
 
         return back()->with(
@@ -534,18 +553,22 @@ class MechanicController extends Controller
             ->mechanicProfile()
             ->firstOrFail();
 
-        abort_if(
-            ! $profile->is_verified ||
-            ! $profile->is_online ||
-            ! $profile->activeMembers()->exists(),
-            409,
-            'Your shop must be verified, online and have active mechanics.'
-        );
-
-        $accepted = DB::transaction(function () use (
+        $result = DB::transaction(function () use (
             $attempt,
-            $request
-        ): bool {
+            $request,
+            $profile
+        ): string {
+            $lockedProfile = MechanicProfile::query()
+                ->whereKey($profile->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+            if (!$lockedProfile->is_verified || $lockedProfile->verification_status !== 'fully_verified' || !$lockedProfile->is_online) {
+                return 'unavailable';
+            }
+            if (!$lockedProfile->hasAvailableMechanic()) {
+                return 'unavailable';
+            }
+
             $attempt = DispatchAttempt::whereKey($attempt->id)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -563,7 +586,7 @@ class MechanicController extends Controller
                     $attempt->update(['status' => 'expired']);
                 }
 
-                return false;
+                return 'expired';
             }
 
             $serviceRequest = ServiceRequest::whereKey(
@@ -597,6 +620,10 @@ class MechanicController extends Controller
                 'changed_by' => $request->user()->id,
             ]);
 
+            if (!$lockedProfile->hasAvailableMechanic()) {
+                $lockedProfile->update(['is_online' => false]);
+            }
+
             AuditLog::record(
                 $request->user(),
                 'mechanic.offer_accepted',
@@ -605,13 +632,25 @@ class MechanicController extends Controller
                 ]
             );
 
-            return true;
+            return 'accepted';
         });
 
-        if (! $accepted) {
+        if ($result === 'unavailable') {
+            if (!$profile->hasAvailableMechanic()) {
+                $this->notifyNoActiveMechanics($request);
+                return back()->withErrors(['offer' => 'No mechanics are currently available. Add or activate a mechanic before accepting requests.']);
+            }
+            return back()->withErrors(['offer' => 'Your shop must be online and verified before accepting requests.']);
+        }
+
+        if ($result !== 'accepted') {
             return back()->withErrors([
                 'offer' => 'This dispatch offer has expired.',
             ]);
+        }
+
+        if (!$profile->hasAvailableMechanic()) {
+            $this->notifyNoActiveMechanics($request);
         }
 
         return back()->with(
@@ -722,6 +761,7 @@ class MechanicController extends Controller
             $serviceRequest,
             $shopUser
         ): string {
+            $lockedProfile = MechanicProfile::query()->whereKey($profile->id)->lockForUpdate()->firstOrFail();
             $serviceRequest = ServiceRequest::whereKey(
                 $serviceRequest->id
             )->lockForUpdate()->firstOrFail();
@@ -770,13 +810,18 @@ class MechanicController extends Controller
             return $member->name;
         });
 
+        if (!$profile->hasAvailableMechanic()) {
+            $profile->update(['is_online' => false]);
+            $this->notifyNoActiveMechanics($request);
+        }
+
         return back()->with(
             'success',
             'Request assigned to '.$assignedMemberName.'.'
         );
     }
 
-    // Mechanic can only mark On the Way
+    // The mechanic marks On the Way and confirms arrival with fresh GPS.
     public function updateStatus(
         Request $request,
         ServiceRequest $serviceRequest
@@ -787,8 +832,12 @@ class MechanicController extends Controller
         );
 
         $data = $request->validate([
-            'status' => ['required', 'in:on_the_way'],
+            'status' => ['required', 'in:on_the_way,arrived'],
             'note' => ['nullable', 'string', 'max:1000'],
+            'gps_latitude' => ['required_if:status,arrived', 'numeric', 'between:-90,90'],
+            'gps_longitude' => ['required_if:status,arrived', 'numeric', 'between:-180,180'],
+            'gps_accuracy' => ['required_if:status,arrived', 'numeric', 'min:0', 'max:10000'],
+            'gps_captured_at' => ['required_if:status,arrived', 'integer', 'min:1'],
         ]);
 
         DB::transaction(function () use (
@@ -817,19 +866,63 @@ class MechanicController extends Controller
                 'Assign a mechanic first.'
             );
 
-            abort_if(
-                $serviceRequest->service_status !== 'accepted',
-                422,
-                'Only the rider can confirm the remaining service progress.'
-            );
+            if ($data['status'] === 'on_the_way') {
+                abort_if(
+                    $serviceRequest->service_status !== 'accepted',
+                    422,
+                    'The mechanic can only mark On the Way after accepting the request.'
+                );
+            } else {
+                abort_if(
+                    $serviceRequest->service_status !== 'on_the_way',
+                    422,
+                    'Confirm arrival only after marking On the Way.'
+                );
 
-            $serviceRequest->update([
-                'service_status' => 'on_the_way',
-            ]);
+                $capturedAt = CarbonImmutable::createFromTimestampMs((int) $data['gps_captured_at']);
+                $ageMilliseconds = now()->getTimestampMs() - $capturedAt->getTimestampMs();
+                $maxAge = max(10, (int) config('fixmoto.gps_max_age_seconds', 120)) * 1000;
+                abort_if(
+                    $ageMilliseconds < -10_000 || $ageMilliseconds > $maxAge,
+                    422,
+                    'GPS reading is stale or has an invalid timestamp. Try again.'
+                );
+
+                $maxAccuracy = (float) config('fixmoto.gps_max_accuracy_meters', 35);
+                abort_if(
+                    (float) $data['gps_accuracy'] > $maxAccuracy,
+                    422,
+                    'GPS reading is not accurate enough. Move to an open area and try again.'
+                );
+
+                $distance = GpsDistance::meters(
+                    (float) $data['gps_latitude'],
+                    (float) $data['gps_longitude'],
+                    (float) $serviceRequest->latitude,
+                    (float) $serviceRequest->longitude,
+                );
+                $radius = (float) config('fixmoto.gps_arrival_radius_meters', 50);
+                abort_if(
+                    $distance > $radius,
+                    422,
+                    'You are '.(int) round($distance).' m from the rider. Arrival can be confirmed within '.(int) round($radius).' m.'
+                );
+
+                MechanicLocation::query()->create([
+                    'mechanic_id' => $request->user()->id,
+                    'service_request_id' => $serviceRequest->id,
+                    'latitude' => $data['gps_latitude'],
+                    'longitude' => $data['gps_longitude'],
+                    'accuracy_meters' => $data['gps_accuracy'],
+                    'reported_at' => $capturedAt,
+                ]);
+            }
+
+            $serviceRequest->update(['service_status' => $data['status']]);
 
             $serviceRequest->statusHistory()->create([
-                'status' => 'on_the_way',
-                'note' => $data['note'] ?? null,
+                'status' => $data['status'],
+                'note' => $data['note'] ?? ($data['status'] === 'arrived' ? 'GPS arrival confirmed.' : null),
                 'changed_by' => $request->user()->id,
             ]);
 
@@ -838,15 +931,14 @@ class MechanicController extends Controller
                 'mechanic.job_status_updated',
                 details: [
                     'service_request_reference' => $serviceRequest->reference,
-                    'status' => 'on_the_way',
+                    'status' => $data['status'],
                 ]
             );
         });
 
-        return back()->with(
-            'success',
-            'Mechanic is on the way. Waiting for rider confirmation.'
-        );
+        return back()->with('success', $data['status'] === 'arrived'
+            ? 'Your arrival was confirmed with GPS.'
+            : 'Mechanic is on the way.');
     }
 
     private function offerNextMechanic(
@@ -870,10 +962,11 @@ class MechanicController extends Controller
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->whereNotIn('user_id', $excluded)
-            ->whereHas('activeMembers')
+            ->whereHas('availableMembers')
             ->get()
             ->filter(fn (MechanicProfile $profile): bool =>
-                $profile->verification_status === 'approved'
+                $profile->verification_status === 'fully_verified'
+                && $profile->hasAvailableMechanic()
                 && \App\Services\ShopServiceCatalog::supports(
                     $profile->services ?? [],
                     $serviceRequest->services
@@ -921,5 +1014,11 @@ class MechanicController extends Controller
                 'dispatch_status' => 'no_mechanics',
             ]);
         }
+    }
+    private function notifyNoActiveMechanics(Request $request): void
+    {
+        $request->user()->notify(new MechanicAvailabilityNotice(
+            'Your shop has no available mechanics right now. Add or activate a mechanic, or wait for an assigned mechanic to finish their current request, to receive and accept more service requests.'
+        ));
     }
 }

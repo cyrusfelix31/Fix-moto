@@ -40,7 +40,7 @@
                 <i data-lucide="clock"></i>
             </div>
 
-            <span>Pending</span>
+            <span>In review</span>
 
             <strong>{{ $counts['pending'] }}</strong>
 
@@ -97,6 +97,13 @@
                     @php
                         $profile = $shop->mechanicProfile;
                         $status = $profile->verification_status;
+                        $statusLabels = [
+                            'pending_verification' => 'Pending Verification',
+                            'under_review' => 'Under Review',
+                            'partially_verified' => 'Partially Verified — Resubmission Required',
+                            'fully_verified' => 'Fully Verified',
+                            'rejected' => 'Rejected',
+                        ];
                     @endphp
 
                     <tr>
@@ -124,9 +131,9 @@
 
                         <td>
 
-                            <span class="verification-badge {{ $status }}">
+                            <span class="verification-badge {{ in_array($status, ['fully_verified', 'approved'], true) ? 'approved' : (in_array($status, ['rejected'], true) ? 'rejected' : 'pending') }}">
 
-                                {{ ucfirst($status) }}
+                                {{ $statusLabels[$status] ?? ucfirst($status) }}
 
                             </span>
 
@@ -161,22 +168,7 @@
 
                                     </a>
 
-                                    @if($status === 'pending')
-
-                                        <button type="button"
-                                                class="approve-action"
-                                                data-review-url="{{ route(
-                                                    'admin.mechanics.verify',
-                                                    $shop
-                                                ) }}"
-                                                data-decision="approve"
-                                                data-review-label="{{ $profile->shop_name }}">
-
-                                            <i data-lucide="check-circle"></i>
-
-                                            Approve
-
-                                        </button>
+                                    @if(in_array($status, ['pending_verification', 'under_review', 'partially_verified'], true))
 
                                         <button type="button"
                                                 class="reject-action"

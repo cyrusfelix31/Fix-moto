@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MechanicAccountSetupController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MechanicController;
 use App\Http\Controllers\RiderController;
 use App\Http\Controllers\ShopProfileController;
 use App\Http\Controllers\ShopVerificationController;
+use App\Http\Controllers\ServiceProgressController;
 use App\Http\Middleware\EnsureMechanicVerified;
 use Illuminate\Support\Facades\Route;
 
@@ -34,19 +36,47 @@ Route::middleware('guest')->group(function () {
         AuthController::class, 'login',
     ]);
 
+    Route::get('/mechanic/access', [AuthController::class, 'showMechanicAccess'])->name('mechanic.access');
+
+    Route::post('/mechanic/access/code', [AuthController::class, 'requestMechanicAccessCode'])
+        ->middleware('throttle:5,1')->name('mechanic.access-code.request');
+    Route::post('/mechanic/access/verify', [AuthController::class, 'verifyMechanicAccessCode'])
+        ->middleware('throttle:10,1')->name('mechanic.access-code.verify');
+    Route::post('/mechanic/access/resend', [AuthController::class, 'resendMechanicAccessCode'])
+        ->middleware('throttle:3,1')->name('mechanic.access-code.resend');
+
     Route::get('/register', [
         AuthController::class, 'showRegister',
     ])->name('register');
 
+    Route::get('/register/email-check', [
+        AuthController::class, 'checkEmail',
+    ])->middleware('throttle:30,1')->name('register.email-check');
+
     Route::post('/register', [
         AuthController::class, 'register',
-    ]);
+    ])->middleware('throttle:5,1');
+
+    Route::post('/register/verify-otp', [
+        AuthController::class, 'verifyRegistrationOtp',
+    ])->middleware('throttle:10,1')->name('register.verify-otp');
+
+    Route::post('/register/resend-otp', [
+        AuthController::class, 'resendRegistrationOtp',
+    ])->middleware('throttle:3,1')->name('register.resend-otp');
 
 });
 
 Route::post('/logout', [
     AuthController::class, 'logout',
 ])->middleware('auth')->name('logout');
+
+Route::get('/mechanic/password-setup/{token}', [MechanicAccountSetupController::class, 'show'])->name('mechanic.password.setup');
+Route::post('/mechanic/password-setup', [MechanicAccountSetupController::class, 'store'])->middleware('throttle:5,1')->name('mechanic.password.setup.store');
+
+Route::get('/service-requests/{serviceRequest}/progress', [
+    ServiceProgressController::class, 'show',
+])->middleware(['auth', 'throttle:60,1'])->name('service-requests.progress');
 
 // LOCATION SEARCH AND GPS
 
@@ -71,6 +101,13 @@ Route::middleware(['auth', 'role:mechanic'])
     ->name('mechanic.')
 
     ->group(function () {
+
+        Route::get('/password-setup-required', [MechanicAccountSetupController::class, 'notice'])->name('password.setup.notice');
+        Route::post('/password-setup-required/resend', [MechanicAccountSetupController::class, 'resend'])
+            ->middleware('throttle:3,1')->name('password.setup.resend');
+        Route::get('/profile-setup', [MechanicAccountSetupController::class, 'photoSetup'])->name('profile.setup');
+        Route::post('/profile-setup', [MechanicAccountSetupController::class, 'savePhotoSetup'])
+            ->middleware('throttle:5,1')->name('profile.setup.save');
 
         Route::get('/verification-status', [
 
@@ -268,6 +305,13 @@ Route::middleware(['auth', 'role:admin'])
     ->name('admin.')
 
     ->group(function () {
+
+        Route::get('/notifications/{notification}', function (\Illuminate\Http\Request $request, string $notification) {
+            $record = $request->user()->notifications()->whereKey($notification)->firstOrFail();
+            $record->markAsRead();
+            $target = $record->data['url'] ?? route('admin.verification');
+            return redirect()->to($target);
+        })->name('notifications.open');
 
         Route::get('/dashboard', [
             AdminController::class, 'dashboard',

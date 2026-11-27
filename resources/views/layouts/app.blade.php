@@ -17,7 +17,7 @@
     <aside class="sidebar role-sidebar">
         <a class="brand" href="{{ route(auth()->user()->role . '.dashboard') }}" aria-label="FixMoto dashboard">
             <span class="admin-brand-tile">
-                <img class="fixmoto-logo" src="{{ asset('images/motofix-logo.png') }}?v=1" alt="">
+                <img class="fixmoto-logo" src="{{ asset('images/fixmoto-sidebar-logo.png') }}?v=1" alt="FixMoto">
             </span>
         </a>
         <nav>
@@ -43,8 +43,19 @@
         <header class="topbar">
             <button class="menu-button" type="button" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Open menu"><i data-lucide="menu"></i></button>
             <div><p class="eyebrow">FIXMOTO</p><h1>@yield('page_title')</h1></div>
-            <div class="profile-chip"><span>{{ substr(auth()->user()->name,0,1) }}</span><div><strong>{{ auth()->user()->name }}</strong><small>{{ auth()->user()->role === 'mechanic' ? 'Mechanic shop' : ucfirst(auth()->user()->role) }}</small></div></div>
+            <div class="profile-chip">@if(auth()->user()->role === 'mechanic')@if(auth()->user()->avatar_path)<img src="{{ Storage::disk('public')->url(auth()->user()->avatar_path) }}" alt="{{ auth()->user()->name }} profile photo">@else<img src="{{ asset('images/default-profile-avatar.svg') }}" alt="Default profile avatar">@endif@else<span>{{ substr(auth()->user()->name,0,1) }}</span>@endif<div>@if(auth()->user()->role === 'mechanic')<strong class="shop-name-visible" title="{{ auth()->user()->mechanicProfile?->shop_name }}">{{ auth()->user()->mechanicProfile?->shop_name ?: 'Mechanic shop' }}</strong><small>{{ auth()->user()->name }} · Mechanic shop</small>@else<strong>{{ auth()->user()->name }}</strong><small>{{ ucfirst(auth()->user()->role) }}</small>@endif</div></div>
         </header>
+        @if(auth()->user()->role === 'mechanic')
+            @php($verificationNotices = auth()->user()->notifications()->latest()->limit(3)->get())
+            @if($verificationNotices->isNotEmpty())
+                <aside class="mechanic-verification-notices" aria-label="Verification updates">
+                    <strong>Verification updates</strong>
+                    @foreach($verificationNotices as $notice)
+                        <p>{{ $notice->data['message'] ?? 'Your verification status was updated.' }}</p>
+                    @endforeach
+                </aside>
+            @endif
+        @endif
         @endauth
         @if(session('success'))<div class="alert success">{{ session('success') }}</div>@endif
         @if(session('warning'))<div class="alert warning">{{ session('warning') }}</div>@endif

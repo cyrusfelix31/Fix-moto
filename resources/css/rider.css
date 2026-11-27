@@ -1304,3 +1304,4 @@
     }
 
 }
+.rider-progress-confirmation{display:flex;grid-template-columns:auto 1fr;align-items:flex-start;gap:10px;margin:12px 0;color:#3f4852;font-size:13px;font-weight:600;line-height:1.45}.rider-progress-confirmation input{width:17px;height:17px;flex:0 0 auto;margin:1px 0 0;accent-color:#2f6b4f}

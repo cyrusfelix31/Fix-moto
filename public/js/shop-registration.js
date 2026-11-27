@@ -15,6 +15,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    form.querySelectorAll('[data-password-toggle]').forEach(button => {
+
+        const password = get(button.getAttribute('aria-controls'));
+
+        if (!password) return;
+
+        button.addEventListener('click', () => {
+
+            const showPassword = password.type === 'password';
+
+            password.type = showPassword ? 'text' : 'password';
+            button.setAttribute('aria-label', showPassword ? 'Hide password' : 'Show password');
+            button.setAttribute('aria-pressed', String(showPassword));
+            button.innerHTML = `<i data-lucide="${showPassword ? 'eye-off' : 'eye'}"></i>`;
+
+            window.lucide?.createIcons();
+
+        });
+
+    });
+
     const addressInput = get('service-address');
     const latitudeInput = get('shop-latitude');
     const longitudeInput = get('shop-longitude');
@@ -23,8 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = get('shop-map-modal');
     const mapMessage = get('shop-map-message');
     const confirmButton = get('confirm-shop-location');
-    const roster = get('mechanic-roster-fields');
-    const addMechanic = get('add-mechanic');
 
     const calapanCenter = [13.4112, 121.1803];
 
@@ -45,9 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         locationStatus,
         modal,
         mapMessage,
-        confirmButton,
-        roster,
-        addMechanic
+        confirmButton
     ];
 
     if (requiredElements.some(element => !element)) {
@@ -66,110 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
         )?.value === 'mechanic';
 
     }
-
-    /* ======================================
-       MECHANIC ROSTER
-       ====================================== */
-
-    const existingMechanics = Object.values(
-        config.existingMechanics || {}
-    );
-
-    let mechanicNames = existingMechanics.length
-
-        ? existingMechanics.map(
-            mechanic => mechanic.name ?? ''
-        )
-
-        : [''];
-
-    function renderMechanics() {
-
-        roster.replaceChildren();
-
-        mechanicNames.forEach((name, index) => {
-
-            const row = document.createElement('div');
-
-            row.className = 'registration-mechanic-row';
-
-            const label = document.createElement('label');
-
-            label.textContent = `Mechanic ${index + 1} name`;
-
-            const input = document.createElement('input');
-
-            input.type = 'text';
-            input.name = `mechanics[${index}][name]`;
-            input.placeholder = 'Enter mechanic name';
-            input.value = name;
-            input.maxLength = 255;
-            input.disabled = !isMechanicRole();
-            input.required = isMechanicRole();
-
-            input.addEventListener('input', () => {
-
-                mechanicNames[index] = input.value;
-
-            });
-
-            label.appendChild(input);
-
-            row.appendChild(label);
-
-            if (mechanicNames.length > 1) {
-
-                const remove = document.createElement('button');
-
-                remove.type = 'button';
-                remove.className = 'btn outline';
-                remove.textContent = 'Remove';
-                remove.disabled = !isMechanicRole();
-
-                remove.addEventListener('click', () => {
-
-                    mechanicNames.splice(index, 1);
-
-                    renderMechanics();
-
-                });
-
-                row.appendChild(remove);
-
-            }
-
-            roster.appendChild(row);
-
-        });
-
-        if (get('mechanic-count')) {
-
-            get('mechanic-count').textContent =
-                `${mechanicNames.length} ${
-                    mechanicNames.length === 1
-                        ? 'mechanic'
-                        : 'mechanics'
-                }`;
-
-        }
-
-        addMechanic.disabled =
-            !isMechanicRole()
-            || mechanicNames.length >= 50;
-
-    }
-
-    addMechanic.addEventListener('click', () => {
-
-        if (mechanicNames.length < 50) {
-
-            mechanicNames.push('');
-
-            renderMechanics();
-
-        }
-
-    });
 
     /* ======================================
        FIX MECHANIC FIELD VISIBILITY
@@ -228,7 +141,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? 'Register Mechanic Shop'
                 : 'Create Account';
 
-        renderMechanics();
+        const securitySection = get('account-security-section');
+        if (securitySection) {
+            securitySection.hidden = mechanic;
+            securitySection.style.display = mechanic ? 'none' : '';
+            securitySection.querySelectorAll('input, button').forEach(element => {
+                element.disabled = mechanic;
+                element.required = !mechanic && ['password', 'password_confirmation'].includes(element.name);
+            });
+        }
 
         if (!mechanic) {
 
@@ -259,80 +180,89 @@ document.addEventListener('DOMContentLoaded', () => {
        DOCUMENT UPLOAD VALIDATION
        ====================================== */
 
-    form.querySelectorAll(
-        'input[type="file"]'
-    ).forEach(input => {
-
-        input.addEventListener('change', () => {
-
-            const card = input.closest(
-                '.document-upload-card'
-            );
-
-            if (!card) return;
-
+    form.querySelectorAll('input[type="file"]').forEach(input => {
+        const card = input.closest('.document-upload-card');
+        const dropzone = input.closest('.document-dropzone');
+        if (!card || !dropzone) return;
+        let previewUrl = null;
+        let preview = card.querySelector('.document-preview');
+        const showError = message => {
             let status = card.querySelector('.file-status');
-
             if (!status) {
-
                 status = document.createElement('p');
-
                 status.className = 'file-status';
-
-                status.setAttribute('role', 'status');
-
+                status.setAttribute('role', 'alert');
                 card.appendChild(status);
-
             }
-
+            status.className = 'file-status error';
+            status.textContent = message;
+        };
+        const clearPreview = () => {
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            previewUrl = null;
+            preview?.remove();
+            preview = null;
+            dropzone.classList.remove('has-preview');
+        };
+        const removePreview = () => {
+            clearPreview();
+            input.value = '';
+            const status = card.querySelector('.file-status');
+            if (status) status.remove();
+        };
+        input.addEventListener('change', () => {
+            const file = input.files?.[0];
+            const oldStatus = card.querySelector('.file-status');
+            oldStatus?.remove();
             input.setCustomValidity('');
-
-            status.className = 'file-status';
-
-            const file = input.files[0];
-
-            if (!file) {
-
-                status.textContent = 'No file selected.';
-
-                return;
-
-            }
-
-            const validExtensions =
-                /\.(pdf|jpg|jpeg|png)$/i;
-
-            if (!validExtensions.test(file.name)) {
-
+            if (!file) return;
+            if (!/\.(pdf|jpg|jpeg|png)$/i.test(file.name)) {
+                clearPreview();
                 input.value = '';
-
-                status.className = 'file-status error';
-
-                status.textContent =
-                    'Only PDF, JPG, JPEG and PNG files are allowed.';
-
+                showError('Only PDF, JPG, JPEG, and PNG files are allowed.');
                 return;
-
             }
-
             if (file.size > 5 * 1024 * 1024) {
-
+                clearPreview();
                 input.value = '';
-
-                status.className = 'file-status error';
-
-                status.textContent =
-                    'Maximum file size is 5 MB.';
-
+                showError('Maximum file size is 5 MB.');
                 return;
-
             }
-
-            status.textContent =
-                `Selected file: ${file.name}`;
-
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            previewUrl = URL.createObjectURL(file);
+            preview?.remove();
+            preview = document.createElement('div');
+            preview.className = 'document-preview';
+            const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+            if (isPdf) {
+                const frame = document.createElement('iframe');
+                frame.src = previewUrl;
+                frame.title = `Preview of ${file.name}`;
+                frame.className = 'document-preview-frame';
+                preview.appendChild(frame);
+            } else {
+                const image = document.createElement('img');
+                image.src = previewUrl;
+                image.alt = 'Selected document preview';
+                preview.appendChild(image);
+            }
+            const actions = document.createElement('div');
+            actions.className = 'document-preview-actions';
+            const replace = document.createElement('button');
+            replace.type = 'button';
+            replace.className = 'document-file-action';
+            replace.textContent = 'Replace document';
+            replace.addEventListener('click', () => input.click());
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'document-file-action is-remove';
+            remove.textContent = 'Remove';
+            remove.addEventListener('click', removePreview);
+            actions.append(replace, remove);
+            preview.appendChild(actions);
+            dropzone.classList.add('has-preview');
+            card.appendChild(preview);
         });
-
     });
 
     /* ======================================
@@ -541,6 +471,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 suggestions.appendChild(button);
 
             });
+
+            if (results.length === 1 && results[0].type === 'address'
+                && Number.isFinite(Number(results[0].latitude))
+                && Number.isFinite(Number(results[0].longitude))) {
+                const place = results[0];
+                hideSuggestions();
+                addressInput.value = place.address;
+                if (openMap()) {
+                    selectLocation(Number(place.latitude), Number(place.longitude));
+                }
+            }
 
             window.lucide?.createIcons();
 
@@ -771,6 +712,22 @@ document.addEventListener('DOMContentLoaded', () => {
         openMap
     );
 
+    get('use-current-shop-location')?.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+            mapMessage.textContent = 'This browser does not support location detection.';
+            mapMessage.className = 'shop-map-message location-error';
+            return;
+        }
+        openMap();
+        mapMessage.textContent = 'Getting your current location…';
+        navigator.geolocation.getCurrentPosition(position => {
+            selectLocation(position.coords.latitude, position.coords.longitude);
+        }, () => {
+            mapMessage.textContent = 'Location access was unavailable. You can place the pin on the map instead.';
+            mapMessage.className = 'shop-map-message location-error';
+        }, {enableHighAccuracy: true, timeout: 12000, maximumAge: 60000});
+    });
+
     /* ======================================
        MANUAL GPS PINNING
        ====================================== */
@@ -924,6 +881,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     'No address was returned.'
                 );
 
+            }
+
+            if (!result.barangay) {
+                throw new Error('This pin does not match a known Calapan barangay. Move it to a clear location inside a barangay.');
             }
 
             selectedLocation = {

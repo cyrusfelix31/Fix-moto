@@ -107,7 +107,7 @@
                 aria-label="FixMoto dashboard">
 
                 <span class="admin-brand-tile">
-                    <img class="fixmoto-logo" src="{{ asset('images/motofix-logo.png') }}?v=1" alt="">
+                    <img class="fixmoto-logo" src="{{ asset('images/fixmoto-sidebar-logo.png') }}?v=1" alt="FixMoto">
                 </span>
 
             </a>

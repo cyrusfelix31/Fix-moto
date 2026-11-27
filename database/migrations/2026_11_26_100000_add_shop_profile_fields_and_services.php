@@ -26,10 +26,18 @@ return new class extends Migration
         });
 
         Schema::table('mechanic_shop_members', function (Blueprint $table): void {
-            $table->string('phone', 32)->nullable();
-            $table->string('specialization', 120)->nullable();
-            $table->unsignedTinyInteger('years_experience')->default(0);
-            $table->string('avatar_path')->nullable();
+            if (! Schema::hasColumn('mechanic_shop_members', 'phone')) {
+                $table->string('phone', 32)->nullable();
+            }
+            if (! Schema::hasColumn('mechanic_shop_members', 'specialization')) {
+                $table->string('specialization', 120)->nullable();
+            }
+            if (! Schema::hasColumn('mechanic_shop_members', 'years_experience')) {
+                $table->unsignedTinyInteger('years_experience')->default(0);
+            }
+            if (! Schema::hasColumn('mechanic_shop_members', 'avatar_path')) {
+                $table->string('avatar_path')->nullable();
+            }
         });
 
         Schema::create('mechanic_shop_services', function (Blueprint $table): void {

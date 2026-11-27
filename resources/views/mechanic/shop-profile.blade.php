@@ -27,9 +27,19 @@
         <div class="owner-profile-row">
             <div class="owner-avatar-wrap">
                 <div class="owner-avatar">
-                    @if($owner->avatar_path)<img src="{{ Storage::disk('public')->url($owner->avatar_path) }}" alt="{{ $owner->name }} profile photo">@else<span>{{ mb_substr($owner->name, 0, 1) }}</span>@endif
+                    @if($owner->avatar_path)<img src="{{ Storage::disk('public')->url($owner->avatar_path) }}" alt="{{ $owner->name }} profile photo">@else<img src="{{ asset('images/default-profile-avatar.svg') }}" alt="Default profile avatar">@endif
                 </div>
-                <form method="POST" action="{{ route('mechanic.shop-profile.photo') }}" enctype="multipart/form-data" class="profile-photo-form">@csrf<label for="owner-photo-upload">Change photo</label><input id="owner-photo-upload" type="file" name="owner_photo" accept=".jpg,.jpeg,.png,.webp" data-auto-submit></form>
+                <form method="POST" action="{{ route('mechanic.shop-profile.photo') }}" enctype="multipart/form-data" class="profile-photo-form" data-photo-cropper>@csrf
+                    <label for="owner-photo-upload" class="photo-picker-label">Choose new photo</label>
+                    <input id="owner-photo-upload" type="file" name="owner_photo" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" data-crop-input>
+                    <small class="profile-photo-file-name">JPG, PNG or WEBP, up to 5 MB. Drag and zoom to crop.</small>
+                    <div class="settings-photo-crop-row">
+                        <div class="photo-crop-viewport settings-photo-crop-viewport" data-crop-viewport aria-label="Profile photo crop preview"><img src="{{ $owner->avatar_path ? Storage::disk('public')->url($owner->avatar_path) : asset('images/default-profile-avatar.svg') }}" alt="Crop preview" data-crop-image></div>
+                        <label class="photo-crop-zoom">Zoom<input type="range" min="1" max="3" step="0.01" value="1" data-crop-zoom disabled></label>
+                    </div>
+                    <small class="profile-photo-file-name" data-crop-file-name>Select a photo to preview and crop.</small>
+                    <button class="btn outline" type="submit" data-photo-save>Crop and save photo</button>
+                </form>
             </div>
             <div class="owner-details-grid">
                 <div><span>Full name</span><strong>{{ $owner->name }}</strong></div>
@@ -102,6 +112,7 @@
             </div>
             <div class="profile-location-meta"><span><i data-lucide="map"></i>Detected barangay</span><strong id="profile-detected-barangay">{{ $profile->barangay ?: 'Not detected' }}</strong><span><i data-lucide="crosshair"></i>GPS coordinates</span><strong id="profile-coordinate-label">{{ $profile->latitude && $profile->longitude ? $profile->latitude.', '.$profile->longitude : 'Pin a location on the map' }}</strong></div>
             <p id="profile-address-hint" class="profile-help-text">Search for an address or barangay, then choose a suggestion. You can also place or drag the map pin.</p>
+            <button id="profile-use-current-location" type="button" class="btn outline"><i data-lucide="locate-fixed"></i>Use My Current Location</button>
             <div id="shop-profile-map" class="shop-profile-map" role="application" aria-label="Pin the mechanic shop location on the map"></div>
             <div id="shop-location-status" class="shop-location-status {{ $profile->latitude && $profile->longitude ? 'is-pinned' : '' }}" role="status" aria-live="polite"><i data-lucide="{{ $profile->latitude && $profile->longitude ? 'circle-check' : 'map-pin' }}"></i><span>{{ $profile->latitude && $profile->longitude ? 'Shop location successfully pinned.' : 'Place or move the pin to set your shop location.' }}</span></div>
             <input id="shop-latitude" name="latitude" type="hidden" value="{{ old('latitude', $profile->latitude) }}">
@@ -150,7 +161,7 @@ document.querySelectorAll('[data-auto-submit]').forEach(input => input.addEventL
     if (label) label.textContent = 'Uploading…';
     input.form.requestSubmit();
 }));
-document.querySelectorAll('.shop-profile-page form').forEach(form => form.addEventListener('submit', event => {
+document.querySelectorAll('.shop-profile-page form:not([data-photo-cropper])').forEach(form => form.addEventListener('submit', event => {
     if (event.defaultPrevented) return;
     const button = event.submitter || form.querySelector('button[type=submit]');
     if (!button || button.disabled) return;
@@ -179,8 +190,9 @@ profileMap.fitBounds(boundaryLayer.getBounds());
 let marker = null;
 const updateCoords = (lat, lng) => { latInput.value = Number(lat).toFixed(7); lngInput.value = Number(lng).toFixed(7); document.getElementById('profile-coordinate-label').textContent = `${latInput.value}, ${lngInput.value}`; };
 const movePin = async (lat, lng, reverse = true) => {
-    if (!window.FixMotoGeography.isInside(boundary.geometry, Number(lat), Number(lng))) { setStatus('is-invalid', 'Choose a location within Calapan City boundaries.', 'circle-alert'); return; }
+    if (!window.FixMotoGeography.isInside(boundary.geometry, Number(lat), Number(lng))) { latInput.value = ''; lngInput.value = ''; document.getElementById('profile-coordinate-label').textContent = 'Pin a location on the map'; document.getElementById('profile-detected-barangay').textContent = 'Not detected'; setStatus('is-invalid', 'Choose a location within Calapan City boundaries.', 'circle-alert'); return; }
     updateCoords(lat, lng);
+    profileMap.setView([lat, lng], Math.max(profileMap.getZoom(), 16));
     if (!marker) { marker = L.marker([lat, lng], {draggable: true}).addTo(profileMap); marker.on('dragend', event => { const point = event.target.getLatLng(); movePin(point.lat, point.lng); }); }
     else marker.setLatLng([lat, lng]);
     setStatus('is-pinned', 'Shop location successfully pinned.', 'circle-check');
@@ -191,10 +203,18 @@ const movePin = async (lat, lng, reverse = true) => {
             const response = await fetch(url, {headers: {Accept: 'application/json'}}); const result = await response.json();
             if (!response.ok) throw new Error(result.message || 'Location could not be checked.');
             if (result.address) addressInput.value = result.address;
-            document.getElementById('profile-detected-barangay').textContent = result.barangay || 'Not identified';
-        } catch (error) { document.getElementById('profile-detected-barangay').textContent = 'Not identified'; }
+            if (!result.barangay) throw new Error('This pin does not match a known barangay. Move the pin to a clear location inside a barangay.');
+            document.getElementById('profile-detected-barangay').textContent = result.barangay;
+        } catch (error) { latInput.value = ''; lngInput.value = ''; document.getElementById('profile-coordinate-label').textContent = 'Pin a location on the map'; document.getElementById('profile-detected-barangay').textContent = 'Not identified'; setStatus('is-invalid', error.message || 'This location could not be verified.', 'circle-alert'); }
     }
 };
+document.getElementById('profile-use-current-location').addEventListener('click', () => {
+    if (!navigator.geolocation) { setStatus('is-invalid', 'This browser does not support location detection.', 'circle-alert'); return; }
+    setStatus('', 'Getting your current location…', 'locate-fixed');
+    navigator.geolocation.getCurrentPosition(position => {
+        movePin(position.coords.latitude, position.coords.longitude, true);
+    }, () => setStatus('is-invalid', 'Location access was unavailable. Place the pin on the map instead.', 'circle-alert'), {enableHighAccuracy: true, timeout: 12000, maximumAge: 60000});
+});
 if (latInput.value && lngInput.value) {
     window.addEventListener('DOMContentLoaded', () => movePin(Number(latInput.value), Number(lngInput.value), false), {once: true});
 }
@@ -218,4 +238,5 @@ addressInput.addEventListener('input', () => {
 document.addEventListener('click', event => { if (!event.target.closest('.profile-address-wrap')) suggestions.hidden = true; });
 document.getElementById('shop-location-form').addEventListener('submit', event => { const button = event.currentTarget.querySelector('button[type=submit]'); if (!latInput.value || !lngInput.value) { event.preventDefault(); setStatus('is-invalid', 'Pin the shop location inside Calapan City before saving.', 'circle-alert'); mapElement.scrollIntoView({behavior: 'smooth', block: 'center'}); return; } button.disabled = true; button.innerHTML = '<span class="shop-profile-spinner" aria-hidden="true"></span><span>Saving…</span>'; });
 </script>
+<script src="{{ asset('js/mechanic-profile-photo.js') }}?v=1" defer></script>
 @endsection

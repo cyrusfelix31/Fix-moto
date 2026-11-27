@@ -4,8 +4,14 @@
 
 @section('content')
 
+@php
+    $otpChallengeId = session('otp_challenge') ?? old('challenge_id');
+    $otpEmail = session('otp_email') ?? old('otp_email');
+    $otpResendSeconds = session('otp_resend_seconds') ?? old('otp_resend_remaining') ?? config('fixmoto.otp_resend_seconds', 60);
+@endphp
+
 <link rel="stylesheet"
-      href="{{ asset('css/shop-registration.css') }}?v=4">
+      href="{{ asset('css/shop-registration.css') }}?v=5">
 
 <section class="auth-card wide fixmoto-registration">
 
@@ -13,7 +19,7 @@
 
     <div class="auth-brand">
 
-        <img class="fixmoto-logo" src="{{ asset('images/motofix-logo.png') }}?v=1" alt="FixMoto motorcycle repair">
+        <img class="fixmoto-logo" src="{{ asset('images/fixmoto-login-logo-edited.png') }}?v=2" alt="FixMoto motorcycle repair">
 
     </div>
 
@@ -44,7 +50,8 @@
     <form method="POST"
           id="registration-form"
           action="{{ route('register') }}"
-          enctype="multipart/form-data">
+          enctype="multipart/form-data"
+          novalidate>
 
         @csrf
 
@@ -137,11 +144,14 @@
 
                     <input type="text"
                            name="name"
+                           data-registration-name
                            value="{{ old('name') }}"
                            placeholder="Enter full name"
                            maxlength="255"
                            autocomplete="name"
                            required>
+
+                    <small class="registration-field-feedback" data-feedback-for="name" aria-live="polite"></small>
 
                 </label>
 
@@ -154,10 +164,16 @@
 
                     <input type="tel"
                            name="phone"
+                           data-registration-phone
                            value="{{ old('phone') }}"
                            placeholder="09XXXXXXXXX"
-                           maxlength="32"
-                           autocomplete="tel">
+                           maxlength="11"
+                           pattern="09[0-9]{9}"
+                           inputmode="numeric"
+                           autocomplete="tel"
+                           required>
+
+                    <small class="registration-field-feedback" data-feedback-for="phone" aria-live="polite"></small>
 
                 </label>
 
@@ -170,10 +186,14 @@
 
                     <input type="email"
                            name="email"
+                           data-registration-email
+                           data-email-check-url="{{ route('register.email-check') }}"
                            value="{{ old('email') }}"
                            placeholder="Enter email address"
                            autocomplete="email"
                            required>
+
+                    <small class="registration-field-feedback" data-feedback-for="email" aria-live="polite"></small>
 
                 </label>
 
@@ -211,9 +231,11 @@
 
                             <input type="date"
                                    name="valid_id_expiration"
-                                   min="{{ today()->toDateString() }}"
+                                   data-registration-expiration
+                                   min="{{ today('Asia/Manila')->toDateString() }}"
                                    value="{{ old('valid_id_expiration') }}"
                                    disabled>
+                            <small class="registration-field-feedback" data-feedback-for="valid_id_expiration" aria-live="polite"></small>
 
                         </label>
 
@@ -370,11 +392,16 @@
 
                     <input type="tel"
                            name="shop_phone"
+                           data-registration-phone
                            value="{{ old('shop_phone') }}"
                            placeholder="Enter shop contact number"
-                           maxlength="32"
+                           maxlength="11"
+                           pattern="09[0-9]{9}"
+                           inputmode="numeric"
                            required
                            disabled>
+
+                    <small class="registration-field-feedback" data-feedback-for="shop_phone" aria-live="polite"></small>
 
                 </label>
 
@@ -437,10 +464,12 @@
 
                     <input type="date"
                            name="business_permit_expiration"
-                           min="{{ today()->toDateString() }}"
+                           data-registration-expiration
+                           min="{{ today('Asia/Manila')->toDateString() }}"
                            value="{{ old('business_permit_expiration') }}"
                            required
                            disabled>
+                    <small class="registration-field-feedback" data-feedback-for="business_permit_expiration" aria-live="polite"></small>
 
                 </label>
 
@@ -475,10 +504,12 @@
 
                     <input type="date"
                            name="mayors_permit_expiration"
-                           min="{{ today()->toDateString() }}"
+                           data-registration-expiration
+                           min="{{ today('Asia/Manila')->toDateString() }}"
                            value="{{ old('mayors_permit_expiration') }}"
                            required
                            disabled>
+                    <small class="registration-field-feedback" data-feedback-for="mayors_permit_expiration" aria-live="polite"></small>
 
                 </label>
 
@@ -509,6 +540,7 @@
 
             </div>
 
+
             <small class="address-hint">
 
                 Documents are submitted for administrator
@@ -523,59 +555,11 @@
              MECHANIC TEAM
              ================================== --}}
 
-        <section id="mechanic-team-section"
-                 class="registration-section mechanic-fields"
-                 hidden>
-
-            <div class="registration-section-header">
-
-                <span class="registration-icon">
-
-                    <i data-lucide="users"></i>
-
-                </span>
-
-                <div>
-
-                    <h3>Mechanic Team</h3>
-
-                    <p>Register the mechanics in your shop.</p>
-
-                </div>
-
-            </div>
-
-            <div class="mechanic-roster-heading">
-
-                <strong>Registered mechanics</strong>
-
-                <span id="mechanic-count">
-
-                    1 mechanic
-
-                </span>
-
-            </div>
-
-            <div id="mechanic-roster-fields"></div>
-
-            <button type="button"
-                    id="add-mechanic"
-                    class="btn outline add-mechanic-button"
-                    disabled>
-
-                Add Mechanic
-
-            </button>
-
-        </section>
-
-
         {{-- ==================================
              ACCOUNT SECURITY
              ================================== --}}
 
-        <section class="registration-section">
+        <section id="account-security-section" class="registration-section rider-account-security">
 
             <div class="registration-section-header">
 
@@ -601,12 +585,31 @@
 
                     Password
 
-                    <input type="password"
-                           name="password"
-                           placeholder="Enter password"
-                           minlength="8"
-                           autocomplete="new-password"
-                           required>
+                    <div class="registration-password-control">
+
+                        <input id="registration-password"
+                               type="password"
+                               name="password"
+                               data-registration-password
+                               placeholder="Enter password"
+                               minlength="8"
+                               autocomplete="new-password"
+                               required>
+
+                        <button class="registration-password-toggle"
+                                type="button"
+                                data-password-toggle
+                                aria-controls="registration-password"
+                                aria-label="Show password"
+                                aria-pressed="false">
+
+                            <i data-lucide="eye"></i>
+
+                        </button>
+
+                    </div>
+
+                    <small class="registration-field-feedback" data-feedback-for="password" aria-live="polite"></small>
 
                 </label>
 
@@ -614,12 +617,31 @@
 
                     Confirm password
 
-                    <input type="password"
-                           name="password_confirmation"
-                           placeholder="Confirm your password"
-                           minlength="8"
-                           autocomplete="new-password"
-                           required>
+                    <div class="registration-password-control">
+
+                        <input id="registration-password-confirmation"
+                               type="password"
+                               name="password_confirmation"
+                               data-registration-password-confirmation
+                               placeholder="Confirm your password"
+                               minlength="8"
+                               autocomplete="new-password"
+                               required>
+
+                        <button class="registration-password-toggle"
+                                type="button"
+                                data-password-toggle
+                                aria-controls="registration-password-confirmation"
+                                aria-label="Show password"
+                                aria-pressed="false">
+
+                            <i data-lucide="eye"></i>
+
+                        </button>
+
+                    </div>
+
+                    <small class="registration-field-feedback" data-feedback-for="password_confirmation" aria-live="polite"></small>
 
                 </label>
 
@@ -656,6 +678,48 @@
     </p>
 
 </section>
+
+<dialog id="registration-otp-dialog"
+        class="registration-otp-dialog"
+        data-challenge="{{ $otpChallengeId }}"
+        data-resend-seconds="{{ (int) $otpResendSeconds }}"
+        aria-labelledby="registration-otp-title">
+    <div class="registration-otp-content">
+        <span class="registration-otp-icon"><i data-lucide="mail-check"></i></span>
+        <h2 id="registration-otp-title">Verify your email</h2>
+        <p>Enter the {{ (int) config('fixmoto.otp_length', 6) }}-digit code sent to <strong>{{ $otpEmail }}</strong>.</p>
+        <p class="muted">The code expires in {{ (int) config('fixmoto.otp_expiration_minutes', 5) }} minutes.</p>
+
+        @error('otp')
+            <div class="alert error" role="alert">{{ $message }}</div>
+        @enderror
+
+        <form method="POST" action="{{ route('register.verify-otp') }}" class="registration-otp-form">
+            @csrf
+            <input type="hidden" name="challenge_id" value="{{ $otpChallengeId }}">
+            <label for="registration-otp-code">Verification code</label>
+            <input id="registration-otp-code"
+                   type="text"
+                   name="otp"
+                   inputmode="numeric"
+                   autocomplete="one-time-code"
+                   pattern="[0-9]+"
+                   minlength="{{ (int) config('fixmoto.otp_length', 6) }}"
+                   maxlength="{{ (int) config('fixmoto.otp_length', 6) }}"
+                   required
+                   autofocus>
+            <button type="submit" class="btn primary">Verify email and create account</button>
+        </form>
+
+        <form method="POST" action="{{ route('register.resend-otp') }}" class="registration-otp-resend">
+            @csrf
+            <input type="hidden" name="challenge_id" value="{{ $otpChallengeId }}">
+            <button type="submit" id="registration-resend-otp" class="btn outline">Resend code</button>
+            <span id="registration-resend-countdown" role="status"></span>
+        </form>
+        <button type="button" id="close-registration-otp" class="registration-otp-close">Back to registration</button>
+    </div>
+</dialog>
 
 
 {{-- ======================================
@@ -775,6 +839,10 @@
 
         <div class="shop-map-actions">
 
+            <button type="button" id="use-current-shop-location" class="btn outline">
+                <i data-lucide="locate-fixed"></i> Use My Current Location
+            </button>
+
             <button type="button"
                     id="cancel-shop-location"
                     class="btn outline">
@@ -838,7 +906,7 @@ window.FixMotoRegistrationConfig = {
 
     reverseUrl: @json(route('locations.reverse')),
 
-    existingMechanics: {{ Js::from(old('mechanics', [])) }}
+    maxDocumentYears: @json(config('fixmoto.document_expiration_max_years', 20))
 
 };
 
@@ -847,8 +915,10 @@ window.FixMotoRegistrationConfig = {
 
 {{-- REGISTRATION JAVASCRIPT --}}
 
-<script src="{{ asset('js/shop-registration.js') }}?v=4"
+<script src="{{ asset('js/shop-registration.js') }}?v=5"
         defer>
 </script>
+
+<script src="{{ asset('js/registration-validation.js') }}?v=2" defer></script>
 
 @endsection
