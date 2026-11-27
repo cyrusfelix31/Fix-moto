@@ -6,8 +6,16 @@
 
 @php
 
-    $isPending =
-        $profile->verification_status === 'pending';
+    $isPending = in_array($profile->verification_status, [
+        'pending_verification', 'under_review', 'partially_verified',
+    ], true);
+    $statusLabels = [
+        'pending_verification' => 'Pending Verification',
+        'under_review' => 'Under Review',
+        'partially_verified' => 'Partially Verified — Resubmission Required',
+        'fully_verified' => 'Fully Verified',
+        'rejected' => 'Rejected',
+    ];
 
     $documents = $profile->documents
         ->keyBy('document_type');
@@ -47,11 +55,21 @@
         <span class="vf-badge
             vf-badge-{{ $profile->verification_status }}">
 
-            {{ ucfirst($profile->verification_status) }}
+            {{ $statusLabels[$profile->verification_status] ?? ucfirst($profile->verification_status) }}
 
         </span>
 
     </div>
+
+    <section class="vf-panel vf-progress-card" aria-label="Verification progress">
+        <div class="vf-progress-heading">
+            <strong>Verification progress</strong>
+            <span>{{ $progress['percentage'] }}% — {{ $progress['approved'] }} of {{ $progress['total'] }} requirements approved</span>
+        </div>
+        <div class="vf-progress-track" role="progressbar" aria-valuenow="{{ $progress['percentage'] }}" aria-valuemin="0" aria-valuemax="100">
+            <span style="width: {{ $progress['percentage'] }}%"></span>
+        </div>
+    </section>
 
 
     <!-- SUCCESS MESSAGE -->
@@ -259,13 +277,7 @@
 
                     $document = $documents->get($type);
 
-                    $documentStatus =
-
-                        $document?->isExpired()
-
-                            ? 'expired'
-
-                            : ($document?->status ?? 'missing');
+                    $documentStatus = $document?->status ?? 'pending';
 
                 @endphp
 
@@ -363,7 +375,7 @@
 
                                 </a>
 
-                                @if ($isPending)
+                                @if ($isPending && ($document->status !== 'approved' || $document->isExpired()))
 
                                     <form
 
@@ -484,15 +496,7 @@
 
                 <h2>Application Decision</h2>
 
-                <p>
-
-                    Approve the shop once all required documents
-                    are approved and valid.
-
-                    Reject the application to allow the owner
-                    to correct rejected documents.
-
-                </p>
+                <p>Individual document decisions update the overall status automatically. Reject the application only when you are denying the full application.</p>
 
             </div>
 
@@ -523,46 +527,6 @@
                     Reject Application
 
                 </button>
-
-                <form
-
-                    method="POST"
-
-                    action="{{ action(
-                        [
-                            \App\Http\Controllers\ShopVerificationController::class,
-                            'decide'
-                        ],
-                        ['user' => $user->id]
-                    ) }}">
-
-                    @csrf
-
-                    <input
-
-                        type="hidden"
-
-                        name="decision"
-
-                        value="approve"
-
-                    >
-
-                    <button
-
-                        type="submit"
-
-                        class="vf-button vf-primary vf-full"
-
-                        @disabled(!$profile->allDocumentsApproved())>
-
-                        <i data-lucide="shield-check"></i>
-
-                        Approve Application
-
-                    </button>
-
-                </form>
 
             </div>
 

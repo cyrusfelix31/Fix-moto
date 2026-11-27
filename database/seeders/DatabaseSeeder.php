@@ -75,6 +75,7 @@ class DatabaseSeeder extends Seeder
                 'latitude' => 13.4112,
                 'longitude' => 121.1803,
                 'is_verified' => true,
+                'verification_status' => 'fully_verified',
                 'is_online' => true,
                 'last_location_at' => now(),
             ],

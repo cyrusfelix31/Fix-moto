@@ -29,7 +29,7 @@ class AdminController extends Controller
         $onlineShopCount = (clone $shops)
             ->where('is_verified', true)
             ->where('is_online', true)
-            ->whereHas('activeMembers')
+            ->whereHas('availableMembers')
             ->count();
         $barangays = Barangay::query()->select('id')->withCount('mechanicProfiles')->get();
         $coveredBarangays = $barangays->where('mechanic_profiles_count', '>', 0)->count();
@@ -73,7 +73,7 @@ class AdminController extends Controller
                 'mechanicProfiles as online_shops_count' => fn (Builder $query) => $query
                     ->where('is_verified', true)
                     ->where('is_online', true)
-                    ->whereHas('activeMembers'),
+                    ->whereHas('availableMembers'),
             ])
             ->orderBy('name')
             ->get();

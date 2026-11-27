@@ -26,9 +26,16 @@ class ServiceRequest extends Model
 
     public function serviceStatusLabel(): string
     {
-        return $this->service_status === 'pending'
-            ? 'Waiting'
-            : str_replace('_', ' ', ucfirst($this->service_status));
+        return [
+            'pending' => 'Waiting for a mechanic',
+            'accepted' => 'Request accepted',
+            'on_the_way' => 'Mechanic on the way',
+            'arrived' => 'Mechanic arrived',
+            'diagnosing' => 'Mechanic arrived',
+            'repairing' => 'Repair in progress',
+            'completed' => 'Service completed',
+            'cancelled' => 'Cancelled',
+        ][$this->service_status] ?? str_replace('_', ' ', ucfirst($this->service_status));
     }
 
     public function rider()

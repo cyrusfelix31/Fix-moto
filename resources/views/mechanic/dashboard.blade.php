@@ -3,8 +3,15 @@
 @section('page_title','Mechanic shop dashboard')
 @section('content')
 <div class="page mechanic-page">
+    @if($availableMemberCount === 0)
+        <section class="mechanic-availability-notice" role="status">
+            <strong>No mechanics are currently available</strong>
+            <p>Your shop cannot receive or accept service requests until at least one mechanic is available.</p>
+            <a href="{{ route('mechanic.team') }}">Manage mechanic availability</a>
+        </section>
+    @endif
     <div class="grid stats">
-        <article class="card stat-card"><div><span class="muted">Verification</span><strong>{{ $profile->is_verified ? 'Verified' : 'Pending' }}</strong></div><span class="stat-icon"><i data-lucide="badge-check"></i></span></article>
+        <article class="card stat-card"><div><span class="muted">Verification</span><strong>{{ $profile->verification_status === 'fully_verified' ? 'Fully verified' : ucfirst(str_replace('_', ' ', $profile->verification_status ?? 'pending_verification')) }}</strong></div><span class="stat-icon"><i data-lucide="badge-check"></i></span></article>
         <article class="card stat-card"><div><span class="muted">Incoming shop requests</span><strong>{{ $offerCount }}</strong></div><span class="stat-icon"><i data-lucide="radio"></i></span></article>
         <article class="card stat-card"><div><span class="muted">Active requests</span><strong>{{ $activeJobCount }}</strong></div><span class="stat-icon"><i data-lucide="briefcase"></i></span></article>
         <article class="card stat-card"><div><span class="muted">Active mechanics</span><strong>{{ $profile->active_members_count }}</strong><small class="muted">{{ $teamMemberCount }} registered</small></div><span class="stat-icon"><i data-lucide="users"></i></span></article>

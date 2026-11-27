@@ -11,6 +11,8 @@
     <meta name="csrf-token"
           content="{{ csrf_token() }}">
 
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/fixmoto-mark.svg') }}?v=4">
+
     <title>
         @yield('title', 'FIXMOTO Administrator')
     </title>
@@ -66,15 +68,12 @@
         {{-- FIXMOTO BRAND --}}
 
         <a class="admin-brand"
-           href="{{ route('admin.dashboard') }}">
+           href="{{ route('admin.dashboard') }}"
+           aria-label="FixMoto admin dashboard">
 
-            <span class="admin-brand-mark">
-
-                <i data-lucide="shield-check"></i>
-
+            <span class="admin-brand-tile">
+                <img class="fixmoto-logo" src="{{ asset('images/fixmoto-sidebar-logo.png') }}?v=1" alt="FixMoto">
             </span>
-
-            <span>FIXMOTO</span>
 
         </a>
 
@@ -297,6 +296,8 @@
 
                 {{-- NOTIFICATION BUTTON --}}
 
+                @php($adminNotifications = auth()->user()->notifications()->latest()->limit(6)->get())
+                @php($unreadAdminNotifications = auth()->user()->unreadNotifications()->count())
                 <button class="notification-button"
                         type="button"
                         id="admin-notification-button"
@@ -306,7 +307,7 @@
 
                     <i data-lucide="bell"></i>
 
-                    @if($pendingVerifications > 0)
+                    @if($pendingVerifications > 0 || $unreadAdminNotifications > 0)
 
                         <span></span>
 
@@ -322,26 +323,16 @@
 
                     <strong>Notifications</strong>
 
-                    @if($pendingVerifications > 0)
+                    @if($adminNotifications->isNotEmpty() || $pendingVerifications > 0)
 
-                        <p>
-
-                            {{ $pendingVerifications }}
-
-                            mechanic shop
-                            {{ $pendingVerifications === 1
-                                ? 'application'
-                                : 'applications' }}
-
-                            pending review.
-
-                        </p>
-
-                        <a href="{{ route('admin.verification') }}">
-
-                            View applications
-
-                        </a>
+                        @if($pendingVerifications > 0)<p>{{ $pendingVerifications }} mechanic shop {{ $pendingVerifications === 1 ? 'application' : 'applications' }} pending review.</p>@endif
+                        @foreach($adminNotifications as $notification)
+                            <a class="admin-notification-item" href="{{ route('admin.notifications.open', $notification->id) }}">
+                                <span>{{ $notification->data['message'] ?? 'FixMoto notification' }}</span>
+                                <small>{{ $notification->created_at->diffForHumans() }}</small>
+                            </a>
+                        @endforeach
+                        <a href="{{ route('admin.verification') }}">View applications</a>
 
                     @else
 

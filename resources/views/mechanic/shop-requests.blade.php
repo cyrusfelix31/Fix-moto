@@ -6,6 +6,14 @@
 
 <div class="page mechanic-page">
 
+    <header class="card-header" style="margin-bottom:16px;align-items:flex-start">
+        <div>
+            <p class="muted" style="margin:0 0 4px">Mechanic shop</p>
+            <h1 style="margin:0">{{ $profile->shop_name ?: 'Your mechanic shop' }}</h1>
+        </div>
+        <a class="btn outline" href="{{ route('mechanic.shop-profile') }}">Shop details</a>
+    </header>
+
     {{-- Error messages --}}
     @if($errors->any())
         <div class="alert error" role="alert">
@@ -286,7 +294,10 @@
                 class="request-card active-job"
                 data-job-id="{{ $activeJob->id }}"
                 data-job-status="{{ $activeJob->service_status }}"
-                data-job-member="{{ $activeJob->mechanic_shop_member_id }}">
+                data-job-member="{{ $activeJob->mechanic_shop_member_id }}"
+                data-progress-url="{{ route('service-requests.progress', $activeJob) }}"
+                data-progress-status="{{ $activeJob->service_status }}"
+                data-progress-dispatch="{{ $activeJob->dispatch_status }}">
 
                 <div class="card-header">
 
@@ -462,8 +473,34 @@
 
                         </form>
 
+                    @elseif($activeJob->service_status === 'on_the_way')
+
+                        <form method="POST"
+                              action="{{ route('mechanic.requests.status', $activeJob) }}"
+                              class="mechanic-arrival-form"
+                              data-mechanic-arrival
+                              data-target-latitude="{{ $activeJob->latitude }}"
+                              data-target-longitude="{{ $activeJob->longitude }}"
+                              data-radius="{{ (float) config('fixmoto.gps_arrival_radius_meters', 50) }}"
+                              data-max-accuracy="{{ (float) config('fixmoto.gps_max_accuracy_meters', 35) }}"
+                              data-max-age="{{ (int) config('fixmoto.gps_max_age_seconds', 120) }}">
+                            @csrf
+                            <input type="hidden" name="status" value="arrived">
+                            <input type="hidden" name="gps_latitude" data-gps-latitude>
+                            <input type="hidden" name="gps_longitude" data-gps-longitude>
+                            <input type="hidden" name="gps_accuracy" data-gps-accuracy>
+                            <input type="hidden" name="gps_captured_at" data-gps-captured-at>
+
+                            <strong>Confirm arrival with GPS</strong>
+                            <p data-gps-message role="status">Waiting for a fresh, accurate GPS reading…</p>
+                            <p>Distance to rider: <strong data-gps-distance>—</strong></p>
+                            <p>GPS accuracy: <span data-gps-accuracy-label>Not available</span></p>
+                            <button type="button" class="btn outline" data-gps-retry>Check my location again</button>
+                            <button type="submit" class="btn primary" data-arrival-submit disabled>Mark as Arrived</button>
+                            <small>Available within {{ (int) config('fixmoto.gps_arrival_radius_meters', 50) }} m with accuracy within {{ (int) config('fixmoto.gps_max_accuracy_meters', 35) }} m.</small>
+                        </form>
+
                     @elseif(in_array($activeJob->service_status, [
-                        'on_the_way',
                         'arrived',
                         'diagnosing',
                         'repairing'
@@ -495,12 +532,7 @@
 
                             <p class="muted" style="margin-top:10px">
 
-                                @if($activeJob->service_status === 'on_the_way')
-
-                                    The assigned mechanic is on the way.
-                                    Waiting for the rider to confirm arrival.
-
-                                @elseif(in_array($activeJob->service_status, [
+                                @if(in_array($activeJob->service_status, [
                                     'arrived',
                                     'diagnosing'
                                 ], true))
@@ -1032,5 +1064,7 @@
 })();
 
 </script>
+
+<script src="{{ asset('js/mechanic-arrival.js') }}?v=1" defer></script>
 
 @endsection

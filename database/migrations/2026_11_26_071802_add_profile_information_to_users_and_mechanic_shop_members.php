@@ -8,32 +8,38 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('profile_picture')->nullable();
-        });
+        if (! Schema::hasColumn('users', 'profile_picture')) {
+            Schema::table('users', function (Blueprint $table): void {
+                $table->string('profile_picture')->nullable();
+            });
+        }
 
-        Schema::table('mechanic_shop_members', function (Blueprint $table) {
-            $table->string('profile_picture')->nullable();
-            $table->string('phone', 32)->nullable();
-            $table->string('specialization')->nullable();
-            $table->unsignedSmallInteger('years_of_experience')
-                ->nullable();
-        });
+        foreach ([
+            'profile_picture' => fn (Blueprint $table) => $table->string('profile_picture')->nullable(),
+            'phone' => fn (Blueprint $table) => $table->string('phone', 32)->nullable(),
+            'specialization' => fn (Blueprint $table) => $table->string('specialization')->nullable(),
+            'years_of_experience' => fn (Blueprint $table) => $table->unsignedSmallInteger('years_of_experience')->nullable(),
+        ] as $column => $addColumn) {
+            if (! Schema::hasColumn('mechanic_shop_members', $column)) {
+                Schema::table('mechanic_shop_members', $addColumn);
+            }
+        }
     }
 
     public function down(): void
     {
-        Schema::table('mechanic_shop_members', function (Blueprint $table) {
-            $table->dropColumn([
-                'profile_picture',
-                'phone',
-                'specialization',
-                'years_of_experience',
-            ]);
-        });
+        foreach (['profile_picture', 'years_of_experience'] as $column) {
+            if (Schema::hasColumn('mechanic_shop_members', $column)) {
+                Schema::table('mechanic_shop_members', function (Blueprint $table) use ($column): void {
+                    $table->dropColumn($column);
+                });
+            }
+        }
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('profile_picture');
-        });
+        if (Schema::hasColumn('users', 'profile_picture')) {
+            Schema::table('users', function (Blueprint $table): void {
+                $table->dropColumn('profile_picture');
+            });
+        }
     }
 };

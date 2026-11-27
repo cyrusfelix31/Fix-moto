@@ -80,11 +80,11 @@ class ShopServiceCatalog
 
         $profiles = MechanicProfile::query()
             ->where('is_verified', true)
-            ->where('verification_status', 'approved')
+            ->where('verification_status', 'fully_verified')
             ->where('is_online', true)
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
-            ->whereHas('activeMembers')
+            ->whereHas('availableMembers')
             ->get(['services']);
 
         foreach ($profiles as $profile) {

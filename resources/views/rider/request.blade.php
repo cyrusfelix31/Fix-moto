@@ -84,22 +84,17 @@
         );
 
         $nextStatus = [
-            'on_the_way' => 'arrived',
             'arrived' => 'repairing',
             'diagnosing' => 'repairing',
             'repairing' => 'completed',
         ][$currentStatus] ?? null;
 
         $buttonLabels = [
-            'arrived' => 'Confirm Mechanic Arrival',
             'repairing' => 'Confirm Repair Started',
             'completed' => 'Confirm Service Completed',
         ];
 
         $instructions = [
-            'arrived' =>
-                'Confirm only when the assigned mechanic has physically arrived.',
-
             'repairing' =>
                 'Confirm when the mechanic starts repairing your vehicle.',
 
@@ -108,15 +103,11 @@
         ];
 
         $modalTitles = [
-            'arrived' => 'Confirm Mechanic Arrival?',
             'repairing' => 'Confirm Repair Started?',
             'completed' => 'Confirm Service Completion?',
         ];
 
         $modalMessages = [
-            'arrived' =>
-                'Please confirm that the assigned mechanic has arrived at your location.',
-
             'repairing' =>
                 'Please confirm that the mechanic has started repairing your vehicle.',
 
@@ -373,6 +364,17 @@
                             rows="3"
                             maxlength="1000"
                             placeholder="Add an optional update...">{{ old('note') }}</textarea>
+
+                        <label class="rider-progress-confirmation">
+                            <input type="checkbox" name="confirmed" value="1" required>
+                            <span>
+                                @if($nextStatus === 'repairing')
+                                    I confirm the mechanic has started working on my vehicle.
+                                @else
+                                    I confirm the requested service has been completed.
+                                @endif
+                            </span>
+                        </label>
 
                         {{-- Plain text confirmation button --}}
                         <button

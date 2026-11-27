@@ -85,7 +85,7 @@ class LocationController extends Controller
                             $longitude
                         );
 
-                        if (!$match['within_city']) {
+                        if (!$match['within_city'] || $match['status'] !== 'matched') {
                             continue;
                         }
 
@@ -146,10 +146,10 @@ class LocationController extends Controller
             $longitude
         );
 
-        if (!$match['within_city']) {
+        if (!$match['within_city'] || $match['status'] !== 'matched') {
 
             return response()->json([
-                'message' => 'Select a location within Calapan City.',
+                'message' => 'Choose an exact location inside a known Calapan City barangay.',
             ], 422);
         }
 

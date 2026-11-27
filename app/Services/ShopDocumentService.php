@@ -70,7 +70,13 @@ class ShopDocumentService
 
                 'date_format:Y-m-d',
 
-                'after_or_equal:today',
+                'date',
+
+                'regex:/^\\d{4}-\\d{2}-\\d{2}$/',
+
+                'after_or_equal:'.today('Asia/Manila')->toDateString(),
+
+                'before_or_equal:'.today('Asia/Manila')->addYears(max(1, (int) config('fixmoto.document_expiration_max_years', 20)))->toDateString(),
             ];
 
             if ($registration) {
@@ -113,32 +119,13 @@ class ShopDocumentService
                 continue;
             }
 
-            if (
-                $document->status === 'rejected'
-                || $document->isExpired()
-            ) {
+            if ($document->status === 'rejected') {
                 $required[] = $type;
                 continue;
             }
 
-            if (
-                in_array(
-                    $type,
-                    self::EXPIRATION_REQUIRED,
-                    true
-                )
-                && !$document->expiration_date
-            ) {
-                $required[] = $type;
-                continue;
-            }
-
-            if (
-                !$document->document_path
-                || !Storage::disk('local')->exists(
-                    $document->document_path
-                )
-            ) {
+            if ($document->isExpired()
+                || (in_array($type, self::EXPIRATION_REQUIRED, true) && !$document->expiration_date)) {
                 $required[] = $type;
             }
         }

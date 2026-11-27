@@ -19,4 +19,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:
         .bindPopup(document.createTextNode({{ Js::from($requestDetails) }}));
 @endforeach
 </script>
+@foreach($requests as $request)
+    <span hidden data-progress-url="{{ route('service-requests.progress', $request) }}" data-progress-status="{{ $request->service_status }}" data-progress-dispatch="{{ $request->dispatch_status }}"></span>
+@endforeach
 @endsection

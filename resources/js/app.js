@@ -46,3 +46,35 @@ window.FixMotoGeography = Object.freeze({
         return isInsideGeometry(geometry, longitude, latitude);
     },
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    const trackers = [...document.querySelectorAll('[data-progress-url][data-progress-status]')];
+    if (!trackers.length) return;
+
+    let reloading = false;
+    const refreshProgress = async () => {
+        if (document.hidden || reloading) return;
+        for (const tracker of trackers) {
+            try {
+                const response = await fetch(tracker.dataset.progressUrl, {
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                    headers: { Accept: 'application/json' },
+                });
+                if (!response.ok) continue;
+                const progress = await response.json();
+                if (progress.service_status !== tracker.dataset.progressStatus
+                    || progress.dispatch_status !== tracker.dataset.progressDispatch) {
+                    reloading = true;
+                    window.location.reload();
+                    return;
+                }
+            } catch (error) {
+                console.warn('Unable to sync service progress.', error);
+            }
+        }
+    };
+
+    refreshProgress();
+    window.setInterval(refreshProgress, 12000);
+});

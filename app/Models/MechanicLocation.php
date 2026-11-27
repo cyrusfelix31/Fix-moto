@@ -11,5 +11,15 @@ class MechanicLocation extends Model
     /** @use HasFactory<MechanicLocationFactory> */
     use HasFactory;
 
+    protected function casts(): array
+    {
+        return [
+            'reported_at' => 'datetime',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
+            'accuracy_meters' => 'decimal:2',
+        ];
+    }
+
     protected $guarded = [];
 }

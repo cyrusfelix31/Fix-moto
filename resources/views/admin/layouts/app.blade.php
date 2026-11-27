@@ -13,6 +13,8 @@
         name="csrf-token"
         content="{{ csrf_token() }}">
 
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/fixmoto-mark.svg') }}?v=4">
+
     <title>
         @yield('title', 'FIXMOTO')
     </title>
@@ -97,19 +99,16 @@
     <div class="app-shell">
 
         {{-- SIDEBAR --}}
-        <aside class="sidebar" id="sidebar">
+        <aside class="sidebar admin-app-sidebar" id="sidebar">
 
             <a
                 class="brand"
-                href="{{ route($user->role.'.dashboard') }}">
+                href="{{ route($user->role.'.dashboard') }}"
+                aria-label="FixMoto dashboard">
 
-                <span class="brand-mark">
-                    F
+                <span class="admin-brand-tile">
+                    <img class="fixmoto-logo" src="{{ asset('images/fixmoto-sidebar-logo.png') }}?v=1" alt="FixMoto">
                 </span>
-
-                <strong>
-                    FIXMOTO
-                </strong>
 
             </a>
 

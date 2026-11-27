@@ -27,13 +27,27 @@ class EnsureMechanicVerified
 
         $profile = $user->mechanicProfile;
 
+        if ($profile?->is_verified && $profile->verification_status === 'fully_verified' && $user->password_setup_required) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Finish setting up your account before using shop features.'], 403);
+            }
+            return redirect()->route('mechanic.password.setup.notice');
+        }
+
+        if ($profile?->is_verified && $profile->verification_status === 'fully_verified' && $user->profile_photo_setup_required) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Finish your profile setup before using shop features.'], 403);
+            }
+            return redirect()->route('mechanic.profile.setup');
+        }
+
         if (
 
             !$profile
 
             || !$profile->is_verified
 
-            || $profile->verification_status !== 'approved'
+            || $profile->verification_status !== 'fully_verified'
 
         ) {
 

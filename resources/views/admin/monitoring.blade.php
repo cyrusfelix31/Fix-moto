@@ -43,4 +43,7 @@
         <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Reference</th><th>Rider</th><th>Mechanic shop</th><th>Dispatch</th><th>Service</th><th>Updated</th></tr></thead><tbody>@foreach($requests as $request)<tr><td>{{ $request->reference }}</td><td>{{ $request->rider?->name }}</td><td>{{ $request->mechanic?->mechanicProfile?->shop_name ?? $request->mechanic?->name ?? 'Unassigned shop' }}</td><td><span class="badge">{{ str_replace('_',' ',ucfirst($request->dispatch_status)) }}</span></td><td>{{ $request->serviceStatusLabel() }}</td><td>{{ $request->updated_at?->diffForHumans() }}</td></tr>@endforeach</tbody></table></div>
     </section>
 </div>
+@foreach($requests as $request)
+    <span hidden data-progress-url="{{ route('service-requests.progress', $request) }}" data-progress-status="{{ $request->service_status }}" data-progress-dispatch="{{ $request->dispatch_status }}"></span>
+@endforeach
 @endsection

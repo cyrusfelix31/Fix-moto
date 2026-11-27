@@ -192,6 +192,46 @@
     box-shadow: 0 0 0 3px rgba(20, 87, 64, .10);
 }
 
+.registration-password-control {
+    position: relative;
+    width: 100%;
+}
+
+.registration-password-control input {
+    padding-right: 52px !important;
+}
+
+.registration-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #62666D;
+    cursor: pointer;
+}
+
+.registration-password-toggle:hover {
+    background: #F4F4F5;
+    color: #171717;
+}
+
+.registration-password-toggle:focus-visible {
+    outline: 2px solid #FF0000;
+    outline-offset: 2px;
+}
+
+.registration-password-toggle svg {
+    width: 18px;
+    height: 18px;
+}
+
 /* SHOP ADDRESS AND GPS ICON */
 
 .shop-address-section {
@@ -394,6 +434,25 @@
     background: #edf5f0;
     border-color: #145740;
 }
+.fixmoto-registration .document-dropzone.has-preview {
+    position: relative;
+    min-height: 0;
+    height: 1px;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    border: 0;
+}
+.document-dropzone.has-preview > :not(input) { display: none; }
+.document-dropzone.has-preview input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-height: 1px;
+    padding: 0;
+    opacity: 0;
+    overflow: hidden;
+}
 
 .document-dropzone svg {
     width: 27px;
@@ -444,6 +503,42 @@
 .document-upload-card .file-status.error {
     color: #b91c1c;
 }
+
+.document-preview {
+    display: grid;
+    gap: 10px;
+    justify-items: center;
+    padding: 12px;
+    margin-top: 10px;
+    border: 1px solid #DCDCDF;
+    border-radius: 12px;
+    background: #fff;
+}
+.document-preview img,
+.document-preview-frame {
+    display: block;
+    width: 100%;
+    height: 220px;
+    border: 0;
+    border-radius: 8px;
+    background: #f7f7f8;
+    object-fit: contain;
+}
+.document-preview-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; }
+.document-file-action {
+    min-height: 38px;
+    padding: 8px 13px;
+    border: 1px solid #d8d8dc;
+    border-radius: 8px;
+    background: #fff;
+    color: #171717;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.document-file-action:hover { border-color: #ff0000; color: #d40000; }
+.document-file-action.is-remove { color: #b91c1c; }
 
 /* EXPIRATION DATE */
 
@@ -691,7 +786,7 @@
 
 .shop-map-actions {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
     margin-top: 18px;
 }
@@ -732,6 +827,14 @@
 /* MOBILE RESPONSIVE DESIGN */
 
 @media (max-width: 600px) {
+
+    .shop-map-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #use-current-shop-location {
+        grid-column: 1 / -1;
+    }
 
     .fixmoto-registration.auth-card.wide {
         padding: 18px;
@@ -794,3 +897,37 @@
     }
 
 }
+
+.registration-field-feedback {
+    min-height: 16px;
+    color: #a32727;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+.registration-field-feedback.is-valid { color: #27623a; }
+.registration-field-feedback.is-invalid { color: #b91c1c; }
+.registration-field-feedback:empty { min-height: 0; }
+.fixmoto-registration input.is-valid,
+.fixmoto-registration select.is-valid { border-color: #3b9a59; box-shadow: 0 0 0 2px rgba(59,154,89,.08); }
+.fixmoto-registration input.is-invalid,
+.fixmoto-registration select.is-invalid { border-color: #b91c1c; box-shadow: 0 0 0 2px rgba(185,28,28,.07); }
+.registration-otp-dialog {
+    width: min(440px, calc(100% - 28px));
+    max-width: 440px;
+    padding: 0;
+    border: 1px solid #DCDCDF;
+    border-radius: 18px;
+    color: #171717;
+    box-shadow: 0 24px 80px rgba(0,0,0,.24);
+}
+.registration-otp-dialog::backdrop { background: rgba(16,18,20,.62); }
+.registration-otp-content { display: grid; gap: 12px; padding: 28px; text-align: center; }
+.registration-otp-content h2 { margin: 0; }
+.registration-otp-content p { margin: 0; line-height: 1.55; }
+.registration-otp-icon { width: 48px; height: 48px; margin: auto; display: grid; place-items: center; border-radius: 50%; background: #e8f5eb; color: #27623a; }
+.registration-otp-icon svg { width: 24px; }
+.registration-otp-form { display: grid; gap: 10px; text-align: left; }
+.registration-otp-form input[name="otp"] { text-align: center; font-size: 24px; letter-spacing: .3em; font-weight: 800; }
+.registration-otp-resend { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px; }
+.registration-otp-close { border: 0; background: none; color: #62666D; text-decoration: underline; cursor: pointer; }
