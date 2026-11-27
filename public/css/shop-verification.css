@@ -4,10 +4,10 @@
    ========================================== */
 
 :root {
-    --verification-green: #FF0000;
-    --verification-dark: #171717;
-    --verification-muted: #62666D;
-    --verification-border: #DCDCDF;
+    --verification-green: #145740;
+    --verification-dark: #1e2925;
+    --verification-muted: #687c73;
+    --verification-border: #e0e6e1;
 }
 
 /* PENDING VERIFICATION PAGE */
@@ -19,7 +19,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #F4F4F5;
+    background: #f7f6f1;
     color: var(--verification-dark);
     font-family: Arial, sans-serif;
     box-sizing: border-box;
@@ -48,15 +48,13 @@
     font-weight: 800;
 }
 
-.verification-brand .fixmoto-logo {
-    width: 220px;
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
-    border: 1px solid #343434;
-    border-radius: 13px;
-    background: #101214;
-    box-shadow: 0 7px 18px rgba(0,0,0,.12);
+.verification-brand > span {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #f2b84b;
 }
 
 .verification-status-icon {
@@ -74,8 +72,8 @@
 }
 
 .verification-status-icon.pending {
-    color: #C90000;
-    background: #FCE2E2;
+    color: #a87318;
+    background: #fff2d8;
 }
 
 .verification-status-icon.rejected {
@@ -123,7 +121,7 @@
 }
 
 .verification-document-list .verification-summary-row {
-    border-bottom: 1px solid #DCDCDF;
+    border-bottom: 1px solid #edf0ed;
 }
 
 /* STATUS BADGES */
@@ -141,8 +139,8 @@
 }
 
 .verification-badge.pending {
-    color: #C90000;
-    background: #FCE2E2;
+    color: #986319;
+    background: #fff0d5;
 }
 
 .verification-badge.approved {
@@ -183,16 +181,16 @@
 
 .verification-button.primary {
     color: #fff;
-    background: #FF0000;
-    border-color: #FF0000;
+    background: #145740;
+    border-color: #145740;
 }
 
 .verification-button.primary:hover {
-    background: #171717;
+    background: #104633;
 }
 
 .verification-button.outline {
-    color: #FF0000;
+    color: #145740;
     background: #fff;
     border-color: #d8e0da;
 }
@@ -226,13 +224,13 @@
     margin-top: 8px;
     border: none;
     background: transparent;
-    color: #62666D;
+    color: #687c73;
     font: inherit;
     cursor: pointer;
 }
 
 .verification-logout:hover {
-    color: #FF0000;
+    color: #145740;
     text-decoration: underline;
 }
 
@@ -333,8 +331,8 @@
 }
 
 .stat-icon.pending {
-    background: #FCE2E2;
-    color: #C90000;
+    background: #fff2d8;
+    color: #a87318;
 }
 
 .stat-icon.approved {
@@ -372,7 +370,7 @@
 
 .verification-table td {
     padding: 18px 14px;
-    border-bottom: 1px solid #DCDCDF;
+    border-bottom: 1px solid #edf0ed;
     font-size: 13px;
     vertical-align: middle;
 }
@@ -412,10 +410,10 @@
     place-items: center;
     width: 35px;
     height: 35px;
-    border: 1px solid #DCDCDF;
+    border: 1px solid #dce3de;
     border-radius: 9px;
     background: #fff;
-    color: #FF0000;
+    color: #145740;
     cursor: pointer;
     list-style: none;
 }
@@ -455,7 +453,7 @@
     font: inherit;
     font-size: 13px;
     text-decoration: none;
-    color: #171717;
+    color: #1e2925;
     cursor: pointer;
     text-align: left;
     box-sizing: border-box;
@@ -485,7 +483,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: #FF0000;
+    color: #145740;
     text-decoration: none;
     font-size: 13px;
     font-weight: 600;
@@ -532,7 +530,7 @@
 .verification-document-heading h3 svg {
     width: 20px;
     height: 20px;
-    color: #FF0000;
+    color: #145740;
 }
 
 .verification-info-card dl {
@@ -585,7 +583,7 @@
     flex-shrink: 0;
     border-radius: 10px;
     background: #e7f1eb;
-    color: #FF0000;
+    color: #145740;
 }
 
 .document-file-icon svg {
@@ -722,7 +720,7 @@
     height: 60px;
     margin: 0 auto 18px;
     border-radius: 50%;
-    color: #FF0000;
+    color: #145740;
     background: #e5f4e8;
 }
 
@@ -775,7 +773,7 @@
     width: 100%;
     min-height: 100px;
     padding: 12px;
-    border: 1px solid #DCDCDF;
+    border: 1px solid #dce3de;
     border-radius: 9px;
     font: inherit;
     font-size: 14px;
@@ -815,7 +813,7 @@
     width: 100%;
     min-width: 0;
     padding: 10px;
-    border: 1px solid #DCDCDF;
+    border: 1px solid #dce3de;
     border-radius: 8px;
     font: inherit;
     font-size: 13px;

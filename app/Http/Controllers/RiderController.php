@@ -5,10 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\DispatchAttempt;
 use App\Models\MechanicProfile;
-use App\Models\MechanicShopService;
 use App\Models\ServiceRequest;
 use App\Models\Vehicle;
-use App\Services\ShopServiceMatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -89,15 +87,7 @@ class RiderController extends Controller
                 'fixmoto.vehicle_categories'
             ),
 
-            'availableServices' => collect(\App\Services\ShopServiceCatalog::riderOptions())
-                ->merge(MechanicShopService::query()
-                    ->where('is_enabled', true)
-                    ->whereHas('mechanicProfile', fn ($query) => $query
-                        ->where('is_verified', true)
-                        ->where('is_online', true)
-                        ->whereHas('activeMembers'))
-                    ->pluck('name'))
-                ->unique()->values(),
+            'availableServices' => \App\Services\ShopServiceCatalog::riderOptions(),
         ]);
     }
 
@@ -159,16 +149,6 @@ class RiderController extends Controller
 
     public function storeRequest(Request $request)
     {
-        $allowedServices = collect(\App\Services\ShopServiceCatalog::riderOptions())
-            ->merge(MechanicShopService::query()
-                ->where('is_enabled', true)
-                ->whereHas('mechanicProfile', fn ($query) => $query
-                    ->where('is_verified', true)
-                    ->where('is_online', true)
-                    ->whereHas('activeMembers'))
-                ->pluck('name'))
-            ->unique()->all();
-
         $data = $request->validate([
             'vehicle_id' => [
                 'required',
@@ -187,7 +167,7 @@ class RiderController extends Controller
                 'required',
                 'string',
                 'distinct',
-                Rule::in($allowedServices),
+                Rule::in(\App\Services\ShopServiceCatalog::riderOptions()),
             ],
 
             'issue_category' => [
@@ -287,11 +267,9 @@ class RiderController extends Controller
                         (float) $data['longitude']
                     ),
                 ])
-                ->filter(fn (array $shop): bool => $shop['distance_km'] <=
+                ->filter(fn (array $shop): bool =>
+                    $shop['distance_km'] <=
                     (float) config('fixmoto.dispatch_radius', 25)
-                    && ShopServiceMatcher::isQualified(
-                        $shop['profile'], $selectedServices
-                    )
                 )
                 ->sortBy('distance_km')
                 ->first();
@@ -326,7 +304,8 @@ class RiderController extends Controller
                 'service_request.created',
                 details: [
                     'reference' => $serviceRequest->reference,
-                    'dispatch_status' => $serviceRequest->dispatch_status,
+                    'dispatch_status' =>
+                        $serviceRequest->dispatch_status,
                 ]
             );
 
@@ -416,7 +395,7 @@ class RiderController extends Controller
             );
 
             abort_if(
-                ! $serviceRequest->mechanic_shop_member_id,
+                !$serviceRequest->mechanic_shop_member_id,
                 422,
                 'No mechanic has been assigned.'
             );
@@ -449,7 +428,8 @@ class RiderController extends Controller
                 $request->user(),
                 'rider.service_status_confirmed',
                 details: [
-                    'service_request_reference' => $serviceRequest->reference,
+                    'service_request_reference' =>
+                        $serviceRequest->reference,
                     'status' => $data['status'],
                 ]
             );

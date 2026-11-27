@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
 use App\Models\MechanicProfile;
-use App\Models\MechanicShopService;
 use App\Models\User;
 use App\Services\BarangayLocator;
 use App\Services\ShopDocumentService;
@@ -25,7 +24,8 @@ class AuthController extends Controller
 
     public function showRegister(
         BarangayLocator $locator
-    ): View {
+    ): View
+    {
         return view('auth.register', [
             'cityBoundary' => $locator->cityFeature(),
         ]);
@@ -42,74 +42,74 @@ class AuthController extends Controller
             'name' => [
                 'required',
                 'string',
-                'max:255',
+                'max:255'
             ],
 
             'email' => [
                 'required',
                 'email',
                 'max:255',
-                'unique:users,email',
+                'unique:users,email'
             ],
 
             'phone' => [
                 'nullable',
                 'required_if:role,mechanic',
                 'string',
-                'max:32',
+                'max:32'
             ],
 
             'password' => [
                 'required',
                 'string',
                 'confirmed',
-                'min:8',
+                'min:8'
             ],
 
             'role' => [
                 'required',
-                'in:rider,mechanic',
+                'in:rider,mechanic'
             ],
 
             'shop_name' => [
                 'exclude_unless:role,mechanic',
                 'required',
                 'string',
-                'max:255',
+                'max:255'
             ],
 
             'shop_phone' => [
                 'exclude_unless:role,mechanic',
                 'required',
                 'string',
-                'max:32',
+                'max:32'
             ],
 
             'service_address' => [
                 'exclude_unless:role,mechanic',
                 'required',
                 'string',
-                'max:1000',
+                'max:1000'
             ],
 
             'latitude' => [
                 'exclude_unless:role,mechanic',
                 'required',
                 'numeric',
-                'between:-90,90',
+                'between:-90,90'
             ],
 
             'longitude' => [
                 'exclude_unless:role,mechanic',
                 'required',
                 'numeric',
-                'between:-180,180',
+                'between:-180,180'
             ],
 
             'services' => [
                 'exclude_unless:role,mechanic',
                 'nullable',
-                'array',
+                'array'
             ],
 
             'mechanics' => [
@@ -117,14 +117,14 @@ class AuthController extends Controller
                 'required',
                 'array',
                 'min:1',
-                'max:50',
+                'max:50'
             ],
 
             'mechanics.*.name' => [
                 'exclude_unless:role,mechanic',
                 'required',
                 'string',
-                'max:255',
+                'max:255'
             ],
 
             ...$documentService->rules(true),
@@ -141,10 +141,11 @@ class AuthController extends Controller
                 (float) $data['longitude']
             );
 
-            if (! $locationMatch['within_city']) {
+            if (!$locationMatch['within_city']) {
 
                 throw ValidationException::withMessages([
-                    'latitude' => 'Choose a shop location within Calapan City boundaries.',
+                    'latitude' =>
+                        'Choose a shop location within Calapan City boundaries.',
                 ]);
             }
 
@@ -178,23 +179,32 @@ class AuthController extends Controller
 
                             'user_id' => $user->id,
 
-                            'shop_name' => $data['shop_name'],
+                            'shop_name' =>
+                                $data['shop_name'],
 
-                            'shop_phone' => $data['shop_phone'],
+                            'shop_phone' =>
+                                $data['shop_phone'],
 
-                            'service_address' => $data['service_address'],
+                            'service_address' =>
+                                $data['service_address'],
 
-                            'barangay' => $locationMatch['barangay_name'],
+                            'barangay' =>
+                                $locationMatch['barangay_name'],
 
-                            'barangay_id' => $locationMatch['barangay_id'],
+                            'barangay_id' =>
+                                $locationMatch['barangay_id'],
 
-                            'barangay_match_status' => $locationMatch['status'],
+                            'barangay_match_status' =>
+                                $locationMatch['status'],
 
-                            'latitude' => $data['latitude'],
+                            'latitude' =>
+                                $data['latitude'],
 
-                            'longitude' => $data['longitude'],
+                            'longitude' =>
+                                $data['longitude'],
 
-                            'services' => $data['services'] ?? [],
+                            'services' =>
+                                $data['services'] ?? [],
 
                             'verification_status' => 'pending',
 
@@ -215,11 +225,6 @@ class AuthController extends Controller
                             $members
                         );
 
-                        $profile->shopServices()->createMany(array_map(
-                            fn (string $name): array => ['name' => $name, 'is_enabled' => true],
-                            MechanicShopService::DEFAULT_SERVICES
-                        ));
-
                         $profile->documents()->createMany(
                             $documents
                         );
@@ -229,7 +234,7 @@ class AuthController extends Controller
                         $user,
                         'user.registered',
                         details: [
-                            'role' => $user->role,
+                            'role' => $user->role
                         ]
                     );
 
@@ -273,14 +278,15 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (! Auth::attempt(
+        if (!Auth::attempt(
             $credentials,
             $request->boolean('remember')
         )) {
 
             return back()
                 ->withErrors([
-                    'email' => 'The provided credentials are incorrect.',
+                    'email' =>
+                        'The provided credentials are incorrect.'
                 ])
                 ->onlyInput('email');
         }
@@ -296,14 +302,14 @@ class AuthController extends Controller
             $request->session()->regenerateToken();
 
             return back()->withErrors([
-                'email' => 'This account is suspended.',
+                'email' => 'This account is suspended.'
             ]);
         }
 
         DB::transaction(function () use ($user): void {
 
             $user->update([
-                'last_login_at' => now(),
+                'last_login_at' => now()
             ]);
 
             AuditLog::record(
@@ -320,8 +326,8 @@ class AuthController extends Controller
             $profile = $user->mechanicProfile;
 
             if (
-                ! $profile
-                || ! $profile->is_verified
+                !$profile
+                || !$profile->is_verified
                 || $profile->verification_status !== 'approved'
             ) {
 

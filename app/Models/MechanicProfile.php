@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\MechanicProfileFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,7 +27,6 @@ class MechanicProfile extends Model
         'is_verified',
         'is_online',
         'verification_status',
-        'logo_path',
     ];
 
     protected function casts(): array
@@ -48,11 +48,6 @@ class MechanicProfile extends Model
     public function activeMembers(): HasMany
     {
         return $this->members()->where('is_active', true);
-    }
-
-    public function shopServices(): HasMany
-    {
-        return $this->hasMany(MechanicShopService::class);
     }
 
     public function documents(): HasMany
@@ -83,16 +78,16 @@ class MechanicProfile extends Model
 
             $document = $documents->get($type);
 
-            if (! $document || $document->status !== 'approved') {
+            if (!$document || $document->status !== 'approved') {
                 return false;
             }
 
             if (
                 in_array($type, [
                     'business_permit',
-                    'mayors_permit',
+                    'mayors_permit'
                 ], true)
-                && ! $document->expiration_date
+                && !$document->expiration_date
             ) {
                 return false;
             }
@@ -108,7 +103,8 @@ class MechanicProfile extends Model
     public function distanceTo(
         float $latitude,
         float $longitude
-    ): float {
+    ): float
+    {
         $earthRadius = 6371;
 
         $latitudeDifference = deg2rad(

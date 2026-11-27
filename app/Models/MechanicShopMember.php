@@ -16,16 +16,13 @@ class MechanicShopMember extends Model
         'name',
         'is_active',
         'profile_picture',
-        'avatar_path',
         'phone',
         'specialization',
         'years_of_experience',
-        'years_experience',
     ];
 
     protected $hidden = [
         'profile_picture',
-        'avatar_path',
         'phone',
     ];
 
@@ -34,7 +31,6 @@ class MechanicShopMember extends Model
         return [
             'is_active' => 'boolean',
             'years_of_experience' => 'integer',
-            'years_experience' => 'integer',
         ];
     }
 

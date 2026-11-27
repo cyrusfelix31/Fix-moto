@@ -473,7 +473,7 @@
                         <div style="
                             margin-top:16px;
                             padding:18px;
-                            background:#DCDCDF;
+                            background:#edf5f0;
                             border:1px solid #d4e5da;
                             border-radius:12px;
                         ">
@@ -482,7 +482,7 @@
                                 display:flex;
                                 align-items:center;
                                 gap:10px;
-                                color:#FF0000;
+                                color:#145740;
                             ">
 
                                 <i data-lucide="clock"></i>
@@ -760,7 +760,7 @@
                 element.style.color =
                     remaining <= 30
                         ? '#dc2626'
-                        : '#FF0000';
+                        : '#145740';
 
             });
 

@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/fixmoto-mark.svg') }}?v=4">
     <title>@yield('title', 'FIXMOTO')</title>
     @vite(['resources/css/app.css','resources/js/app.js'])
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -14,12 +13,8 @@
 <body>
 <div class="app-shell">
     @auth
-    <aside class="sidebar role-sidebar">
-        <a class="brand" href="{{ route(auth()->user()->role . '.dashboard') }}" aria-label="FixMoto dashboard">
-            <span class="admin-brand-tile">
-                <img class="fixmoto-logo" src="{{ asset('images/motofix-logo.png') }}?v=1" alt="">
-            </span>
-        </a>
+    <aside class="sidebar">
+        <a class="brand" href="{{ route(auth()->user()->role . '.dashboard') }}"><span class="brand-mark">F</span><span>FIXMOTO</span></a>
         <nav>
             <a href="{{ route(auth()->user()->role . '.dashboard') }}" class="nav-link {{ request()->routeIs(auth()->user()->role . '.dashboard') ? 'active' : '' }}"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
             @if(auth()->user()->role === 'rider')

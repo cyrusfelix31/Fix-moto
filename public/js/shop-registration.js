@@ -623,9 +623,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         interactive: false,
 
                         style: {
-                            color: '#FF0000',
+                            color: '#145740',
                             weight: 2,
-                            fillColor: '#FF0000',
+                            fillColor: '#145740',
                             fillOpacity: 0.06
                         }
                     }

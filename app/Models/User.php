@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -18,14 +19,12 @@ use Illuminate\Notifications\Notifiable;
     'role',
     'phone',
     'profile_picture',
-    'avatar_path',
 ])]
 
 #[Hidden([
     'password',
     'remember_token',
     'profile_picture',
-    'avatar_path',
 ])]
 
 class User extends Authenticatable
@@ -78,7 +77,8 @@ class User extends Authenticatable
 
     public function scopePendingVerification(
         Builder $query
-    ): void {
+    ): void
+    {
         $query->where('role', 'mechanic')
             ->whereHas(
                 'mechanicProfile',

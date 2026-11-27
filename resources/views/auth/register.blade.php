@@ -13,7 +13,9 @@
 
     <div class="auth-brand">
 
-        <img class="fixmoto-logo" src="{{ asset('images/motofix-logo.png') }}?v=1" alt="FixMoto motorcycle repair">
+        <span class="brand-mark">F</span>
+
+        <strong>FIXMOTO</strong>
 
     </div>
 

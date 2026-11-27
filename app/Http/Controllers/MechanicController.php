@@ -6,10 +6,8 @@ use App\Models\AuditLog;
 use App\Models\DispatchAttempt;
 use App\Models\MechanicProfile;
 use App\Models\MechanicShopMember;
-use App\Models\MechanicShopService;
 use App\Models\ServiceRequest;
 use App\Services\BarangayLocator;
-use App\Services\ShopServiceMatcher;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +38,8 @@ class MechanicController extends Controller
             'offerCount' => DispatchAttempt::where('mechanic_id', $user->id)
                 ->where('status', 'offered')
                 ->where('expires_at', '>', now())
-                ->whereHas('serviceRequest', fn ($query) => $query->where('dispatch_status', 'offered')
+                ->whereHas('serviceRequest', fn ($query) =>
+                    $query->where('dispatch_status', 'offered')
                 )
                 ->count(),
 
@@ -67,7 +66,8 @@ class MechanicController extends Controller
                 ->where('mechanic_id', $user->id)
                 ->where('status', 'offered')
                 ->where('expires_at', '>', now())
-                ->whereHas('serviceRequest', fn ($query) => $query->where('dispatch_status', 'offered')
+                ->whereHas('serviceRequest', fn ($query) =>
+                    $query->where('dispatch_status', 'offered')
                 )
                 ->with([
                     'serviceRequest.rider',
@@ -87,10 +87,11 @@ class MechanicController extends Controller
                 ->get(),
 
             'availableMembers' => $profile->activeMembers()
-                ->whereDoesntHave('serviceRequests', fn ($query) => $query->whereIn(
-                    'service_status',
-                    self::ACTIVE_SERVICE_STATUSES
-                )
+                ->whereDoesntHave('serviceRequests', fn ($query) =>
+                    $query->whereIn(
+                        'service_status',
+                        self::ACTIVE_SERVICE_STATUSES
+                    )
                 )
                 ->orderBy('name')
                 ->get(),
@@ -121,10 +122,11 @@ class MechanicController extends Controller
 
             'teamMembers' => $profile->members()
                 ->withCount([
-                    'serviceRequests as active_request_count' => fn ($query) => $query->whereIn(
-                        'service_status',
-                        self::ACTIVE_SERVICE_STATUSES
-                    ),
+                    'serviceRequests as active_request_count' =>
+                        fn ($query) => $query->whereIn(
+                            'service_status',
+                            self::ACTIVE_SERVICE_STATUSES
+                        ),
                 ])
                 ->orderBy('name')
                 ->get(),
@@ -142,11 +144,6 @@ class MechanicController extends Controller
 
         return view('mechanic.shop-profile', [
             'profile' => $profile,
-            'owner' => $request->user(),
-            'teamMembers' => $profile->members()
-                ->withCount(['serviceRequests as active_request_count' => fn ($query) => $query->whereIn('service_status', self::ACTIVE_SERVICE_STATUSES),
-                ])->orderBy('name')->get(),
-            'shopServices' => $profile->shopServices()->orderBy('name')->get(),
             'cityBoundary' => $locator->cityFeature(),
         ]);
     }
@@ -159,14 +156,14 @@ class MechanicController extends Controller
             ->firstOrFail();
 
         abort_if(
-            ! $profile->is_verified,
+            !$profile->is_verified,
             403,
             'Your account must be verified first.'
         );
 
         if (
-            ! $profile->is_online &&
-            ! $profile->activeMembers()->exists()
+            !$profile->is_online &&
+            !$profile->activeMembers()->exists()
         ) {
             return back()->withErrors([
                 'team' => 'Add at least one active mechanic first.',
@@ -175,7 +172,7 @@ class MechanicController extends Controller
 
         DB::transaction(function () use ($profile, $request): void {
             $profile->update([
-                'is_online' => ! $profile->is_online,
+                'is_online' => !$profile->is_online,
             ]);
 
             AuditLog::record(
@@ -202,16 +199,7 @@ class MechanicController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:32'],
-            'specialization' => ['nullable', 'string', 'max:120'],
-            'years_experience' => ['nullable', 'integer', 'between:0,60'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
-
-        if ($request->hasFile('avatar')) {
-            $data['avatar_path'] = $request->file('avatar')->store('shop-profiles/mechanics', 'public');
-            unset($data['avatar']);
-        }
 
         $added = DB::transaction(function () use (
             $data,
@@ -240,7 +228,7 @@ class MechanicController extends Controller
             return true;
         });
 
-        if (! $added) {
+        if (!$added) {
             return back()->withErrors([
                 'team' => 'A shop can register up to 50 mechanics.',
             ]);
@@ -262,24 +250,17 @@ class MechanicController extends Controller
 
         $data = $request->validate([
             'shop_name' => ['required', 'string', 'max:255'],
-            'shop_phone' => ['sometimes', 'required', 'string', 'max:32'],
             'service_address' => ['required', 'string', 'max:1000'],
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
-            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
-
-        if ($request->hasFile('logo')) {
-            $data['logo_path'] = $request->file('logo')->store('shop-profiles/logos', 'public');
-            unset($data['logo']);
-        }
 
         $locationMatch = $locator->locate(
             (float) $data['latitude'],
             (float) $data['longitude']
         );
 
-        if (! $locationMatch['within_city']) {
+        if (!$locationMatch['within_city']) {
             throw ValidationException::withMessages([
                 'latitude' => 'Choose a shop location within Calapan City boundaries.',
             ]);
@@ -312,142 +293,6 @@ class MechanicController extends Controller
             'success',
             'Shop profile and dispatch location updated.'
         );
-    }
-
-    public function updateOwnerProfile(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:32'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$request->user()->id],
-        ]);
-
-        $request->user()->update($data);
-
-        return back()->with('success', 'Owner information updated.');
-    }
-
-    public function updateProfilePhoto(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'owner_photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'shop_logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-        ]);
-
-        if ($request->hasFile('owner_photo')) {
-            $request->user()->update([
-                'avatar_path' => $request->file('owner_photo')->store('shop-profiles/owners', 'public'),
-            ]);
-        }
-
-        if ($request->hasFile('shop_logo')) {
-            $request->user()->mechanicProfile()->firstOrFail()->update([
-                'logo_path' => $request->file('shop_logo')->store('shop-profiles/logos', 'public'),
-            ]);
-        }
-
-        return back()->with('success', 'Profile photo updated.');
-    }
-
-    public function updateTeamMember(Request $request, MechanicShopMember $member): RedirectResponse
-    {
-        $profile = $request->user()->mechanicProfile()->firstOrFail();
-        abort_if($member->mechanic_profile_id !== $profile->id, 404);
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:32'],
-            'specialization' => ['nullable', 'string', 'max:120'],
-            'years_experience' => ['nullable', 'integer', 'between:0,60'],
-            'is_active' => ['required', 'boolean'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-        ]);
-
-        if ($request->hasFile('avatar')) {
-            $data['avatar_path'] = $request->file('avatar')->store('shop-profiles/mechanics', 'public');
-        }
-        unset($data['avatar']);
-
-        $updated = DB::transaction(function () use ($profile, $member, $data): bool {
-            $member = $profile->members()->whereKey($member->id)->lockForUpdate()->firstOrFail();
-            if (! (bool) $data['is_active'] && $member->serviceRequests()->whereIn('service_status', self::ACTIVE_SERVICE_STATUSES)->exists()) {
-                return false;
-            }
-            $member->update($data);
-
-            return true;
-        });
-
-        if (! $updated) {
-            return back()->withErrors(['team' => 'This mechanic has an active request and cannot be made unavailable.']);
-        }
-
-        return back()->with('success', 'Mechanic information updated.');
-    }
-
-    public function removeTeamMember(Request $request, MechanicShopMember $member): RedirectResponse
-    {
-        $profile = $request->user()->mechanicProfile()->firstOrFail();
-        abort_if($member->mechanic_profile_id !== $profile->id, 404);
-
-        $removed = DB::transaction(function () use ($member, $profile): bool {
-            $member = $profile->members()->whereKey($member->id)->lockForUpdate()->firstOrFail();
-
-            if ($member->serviceRequests()->whereIn('service_status', self::ACTIVE_SERVICE_STATUSES)->exists()) {
-                return false;
-            }
-
-            $member->delete();
-
-            return true;
-        });
-
-        if (! $removed) {
-            return back()->withErrors(['team' => 'A mechanic assigned to an active request cannot be removed.']);
-        }
-
-        return back()->with('success', 'Mechanic removed from your shop.');
-    }
-
-    public function storeShopService(Request $request): RedirectResponse
-    {
-        $profile = $request->user()->mechanicProfile()->firstOrFail();
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:120', 'distinct', 'unique:mechanic_shop_services,name,NULL,id,mechanic_profile_id,'.$profile->id],
-        ]);
-        $profile->shopServices()->create($data);
-
-        return back()->with('success', 'Service added to your shop.');
-    }
-
-    public function updateShopService(Request $request, MechanicShopService $service): RedirectResponse
-    {
-        $profile = $request->user()->mechanicProfile()->firstOrFail();
-        abort_if($service->mechanic_profile_id !== $profile->id, 404);
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:120', 'unique:mechanic_shop_services,name,'.$service->id.',id,mechanic_profile_id,'.$profile->id],
-        ]);
-        $service->update($data);
-
-        return back()->with('success', 'Service name updated.');
-    }
-
-    public function toggleShopService(Request $request, MechanicShopService $service): RedirectResponse
-    {
-        $profile = $request->user()->mechanicProfile()->firstOrFail();
-        abort_if($service->mechanic_profile_id !== $profile->id, 404);
-        $service->update(['is_enabled' => ! $service->is_enabled]);
-
-        return back()->with('success', 'Service availability updated.');
-    }
-
-    public function removeShopService(Request $request, MechanicShopService $service): RedirectResponse
-    {
-        $profile = $request->user()->mechanicProfile()->firstOrFail();
-        abort_if($service->mechanic_profile_id !== $profile->id, 404);
-        $service->delete();
-
-        return back()->with('success', 'Service removed from your shop.');
     }
 
     public function toggleTeamMember(
@@ -485,12 +330,12 @@ class MechanicController extends Controller
             }
 
             $member->update([
-                'is_active' => ! $member->is_active,
+                'is_active' => !$member->is_active,
             ]);
 
             if (
-                ! $member->is_active &&
-                ! $profile->activeMembers()->exists()
+                !$member->is_active &&
+                !$profile->activeMembers()->exists()
             ) {
                 $profile->update([
                     'is_online' => false,
@@ -509,7 +354,7 @@ class MechanicController extends Controller
             return true;
         });
 
-        if (! $updated) {
+        if (!$updated) {
             return back()->withErrors([
                 'team' => 'A mechanic with an active request cannot be deactivated.',
             ]);
@@ -535,9 +380,9 @@ class MechanicController extends Controller
             ->firstOrFail();
 
         abort_if(
-            ! $profile->is_verified ||
-            ! $profile->is_online ||
-            ! $profile->activeMembers()->exists(),
+            !$profile->is_verified ||
+            !$profile->is_online ||
+            !$profile->activeMembers()->exists(),
             409,
             'Your shop must be verified, online and have active mechanics.'
         );
@@ -601,14 +446,15 @@ class MechanicController extends Controller
                 $request->user(),
                 'mechanic.offer_accepted',
                 details: [
-                    'service_request_reference' => $serviceRequest->reference,
+                    'service_request_reference' =>
+                        $serviceRequest->reference,
                 ]
             );
 
             return true;
         });
 
-        if (! $accepted) {
+        if (!$accepted) {
             return back()->withErrors([
                 'offer' => 'This dispatch offer has expired.',
             ]);
@@ -674,14 +520,15 @@ class MechanicController extends Controller
                 $request->user(),
                 'mechanic.offer_declined',
                 details: [
-                    'service_request_id' => $attempt->service_request_id,
+                    'service_request_id' =>
+                        $attempt->service_request_id,
                 ]
             );
 
             return true;
         });
 
-        if (! $declined) {
+        if (!$declined) {
             return back()->withErrors([
                 'offer' => 'This dispatch offer is no longer available.',
             ]);
@@ -761,7 +608,8 @@ class MechanicController extends Controller
                 $request->user(),
                 'mechanic_shop.request_assigned',
                 details: [
-                    'service_request_reference' => $serviceRequest->reference,
+                    'service_request_reference' =>
+                        $serviceRequest->reference,
                     'mechanic_shop_member_id' => $member->id,
                     'mechanic_name' => $member->name,
                 ]
@@ -812,7 +660,7 @@ class MechanicController extends Controller
             );
 
             abort_if(
-                ! $serviceRequest->mechanic_shop_member_id,
+                !$serviceRequest->mechanic_shop_member_id,
                 422,
                 'Assign a mechanic first.'
             );
@@ -837,7 +685,8 @@ class MechanicController extends Controller
                 $request->user(),
                 'mechanic.job_status_updated',
                 details: [
-                    'service_request_reference' => $serviceRequest->reference,
+                    'service_request_reference' =>
+                        $serviceRequest->reference,
                     'status' => 'on_the_way',
                 ]
             );
@@ -887,11 +736,8 @@ class MechanicController extends Controller
                     (float) $serviceRequest->longitude
                 ),
             ])
-            ->filter(fn (array $shop): bool => $shop['distance_km'] <= $radius
-                && ShopServiceMatcher::isQualified(
-                    $shop['profile'], $serviceRequest->services
-                        ?? [$serviceRequest->issue_category]
-                )
+            ->filter(fn (array $shop): bool =>
+                $shop['distance_km'] <= $radius
             )
             ->sortBy('distance_km')
             ->first();
@@ -910,7 +756,8 @@ class MechanicController extends Controller
 
                 'distance_km' => $eligibleShop['distance_km'],
 
-                'attempt_number' => $serviceRequest->dispatchAttempts()->count() + 1,
+                'attempt_number' =>
+                    $serviceRequest->dispatchAttempts()->count() + 1,
             ]);
 
             $serviceRequest->update([
