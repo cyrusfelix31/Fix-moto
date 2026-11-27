@@ -108,9 +108,9 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:
 function setBoundaryStyle(layer) {
     const isSelected = selectedBarangayId !== null && Number(layer.feature.properties.barangay_id) === Number(selectedBarangayId);
     layer.setStyle({
-        color: isSelected ? '#EDB33F' : '#145740',
+        color: isSelected ? '#FF0000' : '#FF0000',
         weight: isSelected ? 3 : 1,
-        fillColor: isSelected ? '#EDB33F' : '#145740',
+        fillColor: isSelected ? '#FF0000' : '#FF0000',
         fillOpacity: isSelected ? 0.3 : 0.06,
     });
 }
@@ -122,9 +122,9 @@ function initializeMap(data) {
     }).addTo(adminMap);
     boundaryLayer = L.geoJSON(data.features, {
         style: feature => ({
-            color: '#145740',
+            color: '#FF0000',
             weight: 1,
-            fillColor: '#145740',
+            fillColor: '#FF0000',
             fillOpacity: 0.06,
         }),
         onEachFeature: (feature, layer) => {
@@ -154,7 +154,7 @@ const countLabels = {
         const meta = chartInstance.getDatasetMeta(0);
         context.save();
         context.font = '600 11px Inter, Segoe UI, sans-serif';
-        context.fillStyle = '#145740';
+        context.fillStyle = '#FF0000';
         context.textBaseline = 'middle';
         meta.data.forEach((bar, index) => {
             const position = bar.getProps(['x', 'y'], true);
@@ -182,8 +182,8 @@ function renderChart(rows, title) {
                     labels: [],
                     datasets: [{
                         data: [],
-                        backgroundColor: '#145740',
-                        hoverBackgroundColor: '#EDB33F',
+                        backgroundColor: '#FF0000',
+                        hoverBackgroundColor: '#FF0000',
                         borderRadius: 6,
                         borderSkipped: false,
                         barThickness: 18,
@@ -218,7 +218,7 @@ function renderChart(rows, title) {
                             suggestedMax: Math.max(1, ...chartBarangayRows.map(row => row.shop_count)) + 1,
                             grid: { color: '#EEF0ED' },
                             border: { display: false },
-                            ticks: { precision: 0, stepSize: 1, color: '#74827B' },
+                            ticks: { precision: 0, stepSize: 1, color: '#62666D' },
                         },
                         y: {
                             grid: { display: false },
@@ -251,7 +251,7 @@ function renderMarkers(data) {
                 radius: 8,
                 color: '#FFFFFF',
                 weight: 2,
-                fillColor: shop.is_online ? '#145740' : '#EDB33F',
+                fillColor: shop.is_online ? '#FF0000' : '#FF0000',
                 fillOpacity: 1,
             });
             const details = document.createElement('div');

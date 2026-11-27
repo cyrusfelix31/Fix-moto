@@ -383,7 +383,7 @@
     display: grid;
     place-items: center;
     flex: none;
-    background: #edf5ef;
+    background: #DCDCDF;
     color: var(--green);
 }
 
@@ -441,7 +441,7 @@
     height: 210px;
     width: 100%;
     border-radius: 10px;
-    background: #e6ebe7;
+    background: #DCDCDF;
     z-index: 0;
 }
 
@@ -471,7 +471,7 @@
     min-width: 0;
     padding: 24px;
     background: #ffffff;
-    border: 1px solid #e6e8e4;
+    border: 1px solid #DCDCDF;
     border-radius: 16px;
     box-sizing: border-box;
     overflow: hidden;
@@ -493,14 +493,14 @@
     font-size: 20px;
     font-weight: 700;
     line-height: 1.4;
-    color: #1e2925;
+    color: #171717;
 }
 
 .rider-progress-header p {
     margin: 6px 0 0;
     font-size: 14px;
     line-height: 1.5;
-    color: #6e7a75;
+    color: #62666D;
 }
 
 
@@ -513,8 +513,8 @@
     flex-shrink: 0;
     padding: 7px 14px;
     border-radius: 30px;
-    background: #fff3d8;
-    color: #926216;
+    background: #FCE2E2;
+    color: #C90000;
     font-size: 12px;
     font-weight: 700;
     line-height: 1.4;
@@ -524,7 +524,7 @@
 
 .rider-status-badge.status-completed {
     background: #e5f2e9;
-    color: #145740;
+    color: #FF0000;
 }
 
 
@@ -547,7 +547,7 @@
 }
 
 .rider-progress-bar span.done {
-    background: #145740;
+    background: #FF0000;
 }
 
 
@@ -591,7 +591,7 @@
 }
 
 .rider-timeline-item.is-done .rider-timeline-icon {
-    background: #145740;
+    background: #FF0000;
     color: #ffffff;
 }
 
@@ -607,20 +607,20 @@
     font-size: 15px;
     font-weight: 600;
     line-height: 1.5;
-    color: #1e2925;
+    color: #171717;
 }
 
 .rider-timeline-content small {
     display: block;
     margin: 0;
-    color: #6e7a75;
+    color: #62666D;
     font-size: 12px;
     line-height: 1.4;
 }
 
 .rider-timeline-item.is-current
 .rider-timeline-content strong {
-    color: #145740;
+    color: #FF0000;
 }
 
 
@@ -631,7 +631,7 @@
     flex-direction: column;
     margin: 24px 0;
     padding-top: 8px;
-    border-top: 1px solid #e6e8e4;
+    border-top: 1px solid #DCDCDF;
 }
 
 .rider-detail-row {
@@ -649,14 +649,14 @@
 
 .rider-detail-row span {
     font-size: 13px;
-    color: #6e7a75;
+    color: #62666D;
     line-height: 1.5;
 }
 
 .rider-detail-row strong {
     font-size: 14px;
     font-weight: 600;
-    color: #1e2925;
+    color: #171717;
     line-height: 1.5;
     overflow-wrap: anywhere;
 }
@@ -685,13 +685,13 @@
     margin: 0 0 10px;
     font-size: 18px;
     font-weight: 700;
-    color: #145740;
+    color: #FF0000;
     line-height: 1.4;
 }
 
 .rider-confirmation-card p {
     margin: 0;
-    color: #6e7a75;
+    color: #62666D;
     font-size: 14px;
     line-height: 1.7;
 }
@@ -718,7 +718,7 @@
 
 .rider-note-label span {
     font-weight: 400;
-    color: #6e7a75;
+    color: #62666D;
 }
 
 #rider-confirmation-form textarea {
@@ -729,10 +729,10 @@
     min-height: 100px;
     padding: 12px 14px;
     margin: 0;
-    border: 1px solid #dce3de;
+    border: 1px solid #DCDCDF;
     border-radius: 10px;
     background: #ffffff;
-    color: #1e2925;
+    color: #171717;
     font-family: inherit;
     font-size: 14px;
     line-height: 1.5;
@@ -742,8 +742,8 @@
 
 #rider-confirmation-form textarea:focus {
     outline: none;
-    border-color: #145740;
-    box-shadow: 0 0 0 3px rgba(20, 87, 64, 0.10);
+    border-color: #FF0000;
+    box-shadow: 0 0 0 3px rgba(255,0,0, 0.10);
 }
 
 
@@ -762,7 +762,7 @@
     margin: 4px 0 0;
     border: 1px solid transparent;
     border-radius: 10px;
-    background: #145740;
+    background: #FF0000;
     color: #ffffff;
     font-family: inherit;
     font-size: 14px;
@@ -778,11 +778,11 @@
 }
 
 .rider-confirmation-card .rider-confirm-btn:hover {
-    background: #104633;
+    background: #171717;
 }
 
 .rider-confirmation-card .rider-confirm-btn:focus-visible {
-    outline: 3px solid rgba(20, 87, 64, 0.25);
+    outline: 3px solid rgba(255,0,0,0.25);
     outline-offset: 3px;
 }
 
@@ -808,10 +808,10 @@
     width: 100%;
     height: 300px;
     min-height: 220px;
-    border: 1px solid #e6e8e4;
+    border: 1px solid #DCDCDF;
     border-radius: 12px;
     overflow: hidden;
-    background: #e6ebe7;
+    background: #DCDCDF;
     z-index: 0;
 }
 
@@ -824,13 +824,13 @@
 
 .rider-landmark strong {
     font-size: 13px;
-    color: #145740;
+    color: #FF0000;
 }
 
 .rider-landmark p {
     margin: 6px 0 0;
     font-size: 14px;
-    color: #6e7a75;
+    color: #62666D;
     line-height: 1.5;
     overflow-wrap: anywhere;
 }
@@ -846,7 +846,7 @@
     align-items: center;
     gap: 14px;
     text-align: center;
-    color: #145740;
+    color: #FF0000;
 }
 
 .rider-completion-message h3 {
@@ -860,7 +860,7 @@
     width: 54px;
     height: 54px;
     border-radius: 50%;
-    background: #145740;
+    background: #FF0000;
     color: #ffffff;
 }
 
@@ -910,7 +910,7 @@
     border: 1px solid #e1e7e3;
     border-radius: 18px;
     background: #ffffff;
-    color: #1e2925;
+    color: #171717;
     overflow: auto;
     box-sizing: border-box;
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
@@ -955,7 +955,7 @@
     border: 0;
     border-radius: 8px;
     background: transparent;
-    color: #6e7a75;
+    color: #62666D;
     font-size: 25px;
     line-height: 1;
     cursor: pointer;
@@ -963,7 +963,7 @@
 
 .fixmoto-modal-close:hover {
     background: #eef2ef;
-    color: #145740;
+    color: #FF0000;
 }
 
 
@@ -978,7 +978,7 @@
     margin-bottom: 18px;
     border-radius: 50%;
     background: #e7f1eb;
-    color: #145740;
+    color: #FF0000;
 }
 
 .fixmoto-modal-icon svg {
@@ -995,14 +995,14 @@
     font-size: 20px;
     font-weight: 700;
     line-height: 1.4;
-    color: #1e2925;
+    color: #171717;
 }
 
 .fixmoto-modal-content p {
     margin: 0;
     font-size: 14px;
     line-height: 1.7;
-    color: #6e7a75;
+    color: #62666D;
 }
 
 
@@ -1053,18 +1053,18 @@
 /* CONFIRM BUTTON */
 
 .fixmoto-modal-btn.confirm-btn {
-    background: #145740;
-    border: 1px solid #145740;
+    background: #FF0000;
+    border: 1px solid #FF0000;
     color: #ffffff;
 }
 
 .fixmoto-modal-btn.confirm-btn:hover {
-    background: #104633;
+    background: #171717;
 }
 
 .fixmoto-modal-btn:focus-visible,
 .fixmoto-modal-close:focus-visible {
-    outline: 3px solid rgba(20, 87, 64, 0.25);
+    outline: 3px solid rgba(255,0,0,0.25);
     outline-offset: 3px;
 }
 

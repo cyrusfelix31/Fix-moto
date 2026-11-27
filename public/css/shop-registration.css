@@ -7,7 +7,7 @@
     max-width: 780px;
     padding: 32px;
     background: #fff;
-    border: 1px solid #e0e6e1;
+    border: 1px solid #DCDCDF;
     border-radius: 20px;
     box-sizing: border-box;
 }
@@ -60,16 +60,16 @@
     gap: 8px;
     min-height: 120px;
     padding: 16px;
-    border: 1px solid #dce3de;
+    border: 1px solid #DCDCDF;
     border-radius: 12px;
     background: #fff;
     text-align: center;
 }
 
 .fixmoto-registration .role-picker input:checked + span {
-    background: #edf5ef;
-    border-color: #145740;
-    box-shadow: 0 0 0 1px #145740;
+    background: #DCDCDF;
+    border-color: #FF0000;
+    box-shadow: 0 0 0 1px #FF0000;
 }
 
 .fixmoto-registration .role-picker input:focus-visible + span {
@@ -79,7 +79,7 @@
 .fixmoto-registration .role-picker svg {
     width: 25px;
     height: 25px;
-    color: #145740;
+    color: #FF0000;
 }
 
 .fixmoto-registration .role-picker strong {
@@ -88,7 +88,7 @@
 
 .fixmoto-registration .role-picker small {
     font-size: 12px;
-    color: #687c73;
+    color: #62666D;
 }
 
 /* REGISTRATION SECTIONS */
@@ -98,7 +98,7 @@
     min-width: 0;
     padding: 22px;
     margin: 0;
-    border: 1px solid #e0e6e1;
+    border: 1px solid #DCDCDF;
     border-radius: 14px;
     background: #fff;
 }
@@ -109,7 +109,7 @@
     gap: 13px;
     padding-bottom: 17px;
     margin-bottom: 20px;
-    border-bottom: 1px solid #edf0ed;
+    border-bottom: 1px solid #DCDCDF;
 }
 
 .registration-icon {
@@ -121,7 +121,7 @@
     flex-shrink: 0;
     border-radius: 11px;
     background: #e7f1eb;
-    color: #145740;
+    color: #FF0000;
 }
 
 .registration-icon svg {
@@ -138,7 +138,7 @@
 
 .registration-section-header p {
     margin: 5px 0 0;
-    color: #687c73;
+    color: #62666D;
     font-size: 13px;
     line-height: 1.5;
 }
@@ -160,7 +160,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    color: #1e2925;
+    color: #171717;
     font-size: 13px;
     font-weight: 600;
 }
@@ -173,10 +173,10 @@
     min-height: 48px;
     padding: 12px 14px;
     margin: 0;
-    border: 1px solid #dce3de;
+    border: 1px solid #DCDCDF;
     border-radius: 9px;
     background: #fff;
-    color: #1e2925;
+    color: #171717;
     font-family: inherit;
     font-size: 14px;
 }
@@ -188,8 +188,8 @@
 .registration-grid input:focus,
 .registration-mechanic-row input:focus {
     outline: none;
-    border-color: #145740;
-    box-shadow: 0 0 0 3px rgba(20, 87, 64, .10);
+    border-color: #FF0000;
+    box-shadow: 0 0 0 3px rgba(255,0,0, .10);
 }
 
 /* SHOP ADDRESS AND GPS ICON */
@@ -230,14 +230,14 @@
     margin: 0;
     border: 0;
     border-radius: 9px;
-    background: #145740;
+    background: #FF0000;
     color: #fff;
     cursor: pointer;
     transition: background .2s ease;
 }
 
 .shop-gps-button:hover {
-    background: #104633;
+    background: #171717;
 }
 
 .shop-gps-button svg {
@@ -248,7 +248,7 @@
 .address-hint {
     display: block;
     margin-top: 9px;
-    color: #687c73;
+    color: #62666D;
     font-size: 12px;
     line-height: 1.6;
 }
@@ -259,13 +259,13 @@
     padding: 0;
     margin: 9px 0 0;
     border: 0;
-    color: #687c73;
+    color: #62666D;
     font-size: 12px;
     line-height: 1.5;
 }
 
 .location-confirmed {
-    color: #145740 !important;
+    color: #FF0000 !important;
     font-weight: 600;
 }
 
@@ -283,7 +283,7 @@
     z-index: 1000;
     max-height: 300px;
     overflow-y: auto;
-    border: 1px solid #dce3de;
+    border: 1px solid #DCDCDF;
     border-radius: 11px;
     background: #fff;
     box-shadow: 0 12px 30px rgba(0, 0, 0, .12);
@@ -301,7 +301,7 @@
     padding: 14px;
     margin: 0;
     border: 0;
-    border-bottom: 1px solid #edf0ed;
+    border-bottom: 1px solid #DCDCDF;
     background: #fff;
     text-align: left;
     cursor: pointer;
@@ -313,14 +313,14 @@
 
 .address-suggestion-item:hover,
 .address-suggestion-item:focus-visible {
-    background: #edf5f0;
+    background: #DCDCDF;
 }
 
 .address-suggestion-item svg {
     width: 20px;
     height: 20px;
     flex-shrink: 0;
-    color: #145740;
+    color: #FF0000;
 }
 
 .address-suggestion-item span {
@@ -331,21 +331,21 @@
 }
 
 .address-suggestion-item strong {
-    color: #1e2925;
+    color: #171717;
     font-size: 13px;
     font-weight: 600;
     overflow-wrap: anywhere;
 }
 
 .address-suggestion-item small {
-    color: #687c73;
+    color: #62666D;
     font-size: 11px;
 }
 
 .address-empty-message {
     padding: 15px;
     margin: 0;
-    color: #687c73;
+    color: #62666D;
     font-size: 13px;
 }
 
@@ -355,7 +355,7 @@
     padding: 0 0 22px;
     margin: 0 0 22px;
     border: 0;
-    border-bottom: 1px solid #e0e6e1;
+    border-bottom: 1px solid #DCDCDF;
     border-radius: 0;
     background: transparent;
 }
@@ -368,7 +368,7 @@
 
 .document-upload-card h4 {
     margin: 0 0 15px;
-    color: #1e2925;
+    color: #171717;
     font-size: 15px;
     font-weight: 700;
 }
@@ -391,23 +391,23 @@
 }
 
 .fixmoto-registration .document-dropzone:hover {
-    background: #edf5f0;
-    border-color: #145740;
+    background: #DCDCDF;
+    border-color: #FF0000;
 }
 
 .document-dropzone svg {
     width: 27px;
     height: 27px;
-    color: #145740;
+    color: #FF0000;
 }
 
 .document-dropzone strong {
-    color: #145740;
+    color: #FF0000;
     font-size: 15px;
 }
 
 .document-dropzone small {
-    color: #687c73;
+    color: #62666D;
     font-size: 12px;
 }
 
@@ -418,7 +418,7 @@
     padding: 10px;
     border: 0;
     background: transparent;
-    color: #687c73;
+    color: #62666D;
     font-family: inherit;
     font-size: 12px;
 }
@@ -428,7 +428,7 @@
     margin-right: 8px;
     border: 0;
     border-radius: 7px;
-    background: #145740;
+    background: #FF0000;
     color: #fff;
     font-family: inherit;
     cursor: pointer;
@@ -436,7 +436,7 @@
 
 .document-upload-card .file-status {
     margin: 9px 0 0;
-    color: #145740;
+    color: #FF0000;
     font-size: 12px;
     overflow-wrap: anywhere;
 }
@@ -459,7 +459,7 @@
     width: 100%;
     min-height: 48px;
     padding: 12px 14px;
-    border: 1px solid #dce3de;
+    border: 1px solid #DCDCDF;
     border-radius: 9px;
     background: #fff;
     font-family: inherit;
@@ -468,8 +468,8 @@
 
 .document-expiration input:focus {
     outline: none;
-    border-color: #145740;
-    box-shadow: 0 0 0 3px rgba(20, 87, 64, .10);
+    border-color: #FF0000;
+    box-shadow: 0 0 0 3px rgba(255,0,0, .10);
 }
 
 /* MECHANIC TEAM */
@@ -489,8 +489,8 @@
 .mechanic-roster-heading span {
     padding: 6px 10px;
     border-radius: 20px;
-    background: #edf5f0;
-    color: #145740;
+    background: #DCDCDF;
+    color: #FF0000;
     font-size: 11px;
     font-weight: 600;
 }
@@ -532,7 +532,7 @@
     margin-top: 4px;
     border: 0;
     border-radius: 10px;
-    background: #145740;
+    background: #FF0000;
     color: #fff;
     font-size: 14px;
     font-weight: 700;
@@ -541,7 +541,7 @@
 }
 
 .fixmoto-registration .registration-submit:hover {
-    background: #104633;
+    background: #171717;
 }
 
 /* VALIDATION ERRORS */
@@ -567,10 +567,10 @@
     padding: 0;
     margin: auto;
     overflow: auto;
-    border: 1px solid #dce3de;
+    border: 1px solid #DCDCDF;
     border-radius: 18px;
     background: #fff;
-    color: #1e2925;
+    color: #171717;
     box-sizing: border-box;
     box-shadow: 0 24px 70px rgba(0, 0, 0, .24);
 }
@@ -605,7 +605,7 @@
 
 .shop-map-modal-header p {
     margin: 6px 0 0;
-    color: #687c73;
+    color: #62666D;
     font-size: 13px;
     line-height: 1.5;
 }
@@ -621,7 +621,7 @@
     border: 0;
     border-radius: 8px;
     background: #f0f4f1;
-    color: #145740;
+    color: #FF0000;
     font-size: 25px;
     cursor: pointer;
 }
@@ -634,9 +634,9 @@
     height: 340px;
     min-height: 240px;
     overflow: hidden;
-    border: 1px solid #dce3de;
+    border: 1px solid #DCDCDF;
     border-radius: 12px;
-    background: #e6ebe7;
+    background: #DCDCDF;
     z-index: 0;
 }
 
@@ -655,14 +655,14 @@
 
 .selected-location-details small {
     display: block;
-    color: #687c73;
+    color: #62666D;
     font-size: 12px;
 }
 
 .selected-location-details strong {
     display: block;
     margin-top: 4px;
-    color: #145740;
+    color: #FF0000;
     font-size: 14px;
     line-height: 1.5;
     overflow-wrap: anywhere;
@@ -682,7 +682,7 @@
 
 .shop-map-message {
     margin: 14px 0;
-    color: #687c73;
+    color: #62666D;
     font-size: 13px;
     line-height: 1.5;
 }
@@ -714,14 +714,14 @@
 }
 
 .shop-map-actions .primary {
-    background: #145740;
+    background: #FF0000;
     color: #fff;
 }
 
 .shop-map-actions .outline {
     border: 1px solid #d6dfd9;
     background: #fff;
-    color: #145740;
+    color: #FF0000;
 }
 
 .shop-map-actions .btn:disabled {

@@ -11,6 +11,8 @@
     <meta name="csrf-token"
           content="{{ csrf_token() }}">
 
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/fixmoto-mark.svg') }}?v=4">
+
     <title>
         @yield('title', 'FIXMOTO Administrator')
     </title>
@@ -66,15 +68,12 @@
         {{-- FIXMOTO BRAND --}}
 
         <a class="admin-brand"
-           href="{{ route('admin.dashboard') }}">
+           href="{{ route('admin.dashboard') }}"
+           aria-label="FixMoto admin dashboard">
 
-            <span class="admin-brand-mark">
-
-                <i data-lucide="shield-check"></i>
-
+            <span class="admin-brand-tile">
+                <img class="fixmoto-logo" src="{{ asset('images/motofix-logo.png') }}?v=1" alt="">
             </span>
-
-            <span>FIXMOTO</span>
 
         </a>
 

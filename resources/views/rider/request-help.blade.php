@@ -501,7 +501,7 @@ function showGpsStatus(message, type = 'normal') {
 
     if (type === 'success') {
 
-        gpsStatus.style.color = '#145740';
+        gpsStatus.style.color = '#FF0000';
 
     } else if (type === 'error') {
 
@@ -665,11 +665,11 @@ function setRiderLocation(
 
                 radius: accuracy,
 
-                color: '#145740',
+                color: '#FF0000',
 
                 weight: 1,
 
-                fillColor: '#145740',
+                fillColor: '#FF0000',
 
                 fillOpacity: 0.10
 

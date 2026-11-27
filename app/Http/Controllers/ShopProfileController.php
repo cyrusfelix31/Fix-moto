@@ -59,6 +59,9 @@ class ShopProfileController extends Controller
             'owner' => $owner,
             'profile' => $profile,
             'teamMembers' => $teamMembers,
+            'shopServices' => $profile->shopServices()
+                ->orderBy('name')
+                ->get(),
             'cityBoundary' => $locator->cityFeature(),
             'defaultServices' => config('fixmoto.services', []),
             'serviceLabels' => ShopServiceCatalog::LABELS,

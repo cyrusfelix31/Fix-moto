@@ -177,7 +177,10 @@ class MechanicShopWorkflowTest extends TestCase
         $profilePage = $this->actingAs($shop)->get(route('mechanic.shop-profile'));
         $profilePage->assertOk()
             ->assertSee('shop-profile-map', false)
-            ->assertSee('Shop details and location')
+            ->assertSee('Shop location and contact')
+            ->assertSee('Owner\'s profile', false)
+            ->assertSee('Mechanic information')
+            ->assertSee('Shop services')
             ->assertSee('Shop location successfully pinned.')
             ->assertDontSee($serviceRequest->reference)
             ->assertDontSee('Shop roster')
@@ -346,6 +349,7 @@ class MechanicShopWorkflowTest extends TestCase
             'latitude' => 13.4112,
             'longitude' => 121.1803,
             'is_verified' => true,
+            'verification_status' => 'approved',
             'is_online' => true,
         ]);
         $member = $withMember ? $profile->members()->create(['name' => 'Available Mechanic']) : null;

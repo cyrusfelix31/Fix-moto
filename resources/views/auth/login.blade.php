@@ -1,9 +1,9 @@
 @extends('layouts.app')
 @section('title','Sign in - FIXMOTO')
 @section('content')
-<section class="auth-card">
-    <div class="auth-brand"><span class="brand-mark">F</span><strong>FIXMOTO</strong></div>
-    <h2>Welcome to Fix-Moto</h2><p>Sign in to your FIXMOTO account</p>
+<section class="auth-card login-card">
+    <div class="auth-brand login-brand"><img class="fixmoto-logo" src="{{ asset('images/fixmoto-login-logo.png') }}?v=1" alt="FixMoto motorcycle repair"></div>
+    <h2>Welcome to FixMoto</h2><p>Sign in to your FixMoto account</p>
     @if($errors->any())<div class="alert error">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif
     <form method="POST" action="{{ route('login') }}">@csrf
         <label>Username<input type="text" name="email" value="{{ old('email') }}" required autofocus></label>
