@@ -11,7 +11,7 @@
 @endphp
 
 <link rel="stylesheet"
-      href="{{ asset('css/shop-registration.css') }}?v=5">
+      href="{{ asset('css/shop-registration.css') }}?v=6">
 
 <section class="auth-card wide fixmoto-registration">
 

@@ -40,8 +40,8 @@ return [
         'smtp' => [
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),
-            'auto_tls' => (bool) env('MAIL_AUTO_TLS', true),
-            'require_tls' => (bool) env('MAIL_REQUIRE_TLS', true),
+            'auto_tls' => filter_var(env('MAIL_AUTO_TLS', true), FILTER_VALIDATE_BOOL),
+            'require_tls' => filter_var(env('MAIL_REQUIRE_TLS', true), FILTER_VALIDATE_BOOL),
             'url' => env('MAIL_URL'),
             'host' => env('MAIL_HOST', 'smtp.gmail.com'),
             'port' => env('MAIL_PORT', 587),

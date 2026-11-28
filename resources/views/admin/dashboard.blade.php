@@ -154,7 +154,7 @@ const countLabels = {
         const meta = chartInstance.getDatasetMeta(0);
         context.save();
         context.font = '600 11px Inter, Segoe UI, sans-serif';
-        context.fillStyle = '#145740';
+        context.fillStyle = '#FF0000';
         context.textBaseline = 'middle';
         meta.data.forEach((bar, index) => {
             const position = bar.getProps(['x', 'y'], true);
@@ -182,8 +182,8 @@ function renderChart(rows, title) {
                     labels: [],
                     datasets: [{
                         data: [],
-                        backgroundColor: '#145740',
-                        hoverBackgroundColor: '#EDB33F',
+                        backgroundColor: '#FF0000',
+                        hoverBackgroundColor: '#C90000',
                         borderRadius: 6,
                         borderSkipped: false,
                         barThickness: 18,

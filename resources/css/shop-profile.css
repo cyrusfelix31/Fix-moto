@@ -3,9 +3,9 @@
    ========================================== */
 
 .sp-page {
-    --sp-green: #145740;
-    --sp-green-dark: #104633;
-    --sp-soft: #eaf3ed;
+    --sp-green: #FF0000;
+    --sp-green-dark: #C90000;
+    --sp-soft: #FCE2E2;
     --sp-border: #e0e5e1;
     --sp-text: #1e2925;
     --sp-muted: #6e7a75;
@@ -81,7 +81,7 @@
     display: grid;
     place-items: center;
     background: #e5efe8;
-    color: #145740;
+    color: #FF0000;
     border-radius: 15px;
 }
 
@@ -109,7 +109,7 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    color: #145740;
+    color: #FF0000;
     font-size: 13px;
     font-weight: 600;
 }
@@ -182,7 +182,7 @@
     place-items: center;
     flex-shrink: 0;
     background: #e5efe8;
-    color: #145740;
+    color: #FF0000;
     border-radius: 50%;
     overflow: hidden;
 }
@@ -284,7 +284,7 @@
     width: 14px;
     height: 14px;
     flex-shrink: 0;
-    color: #145740;
+    color: #FF0000;
 }
 
 .sp-member-status {
@@ -321,7 +321,7 @@
     align-items: center;
     gap: 7px;
     margin-top: 14px;
-    color: #145740;
+    color: #FF0000;
     font-size: 13px;
     font-weight: 600;
     text-decoration: none;
@@ -366,7 +366,7 @@
     width: 18px;
     height: 18px;
     flex-shrink: 0;
-    color: #145740;
+    color: #FF0000;
 }
 
 .sp-service-row > span {
@@ -383,7 +383,7 @@
 }
 
 .sp-service-check {
-    color: #145740;
+    color: #FF0000;
 }
 
 .sp-service-remove {
@@ -439,7 +439,7 @@
     height: 18px;
     flex-shrink: 0;
     margin-top: 2px;
-    color: #145740;
+    color: #FF0000;
 }
 
 .sp-card .sp-field {
@@ -479,28 +479,28 @@
 }
 
 .sp-primary {
-    background: #145740;
+    background: #FF0000;
     color: #ffffff;
 }
 
 .sp-primary:hover {
-    background: #104633;
+    background: #C90000;
     color: #ffffff;
 }
 
 .sp-outline {
     background: #ffffff;
-    color: #145740;
+    color: #FF0000;
     border-color: #dce3de;
 }
 
 .sp-outline:hover {
-    background: #edf5ef;
+    background: #FCE2E2;
 }
 
 .sp-soft {
-    background: #eaf3ed;
-    color: #145740;
+    background: #FCE2E2;
+    color: #FF0000;
 }
 
 .sp-soft:hover {
@@ -508,13 +508,13 @@
 }
 
 .sp-dashed {
-    color: #145740;
+    color: #FF0000;
     background: #ffffff;
-    border: 1px dashed #145740;
+    border: 1px dashed #FF0000;
 }
 
 .sp-dashed:hover {
-    background: #edf5ef;
+    background: #FCE2E2;
 }
 
 .sp-full {
@@ -540,7 +540,7 @@
     padding: 0;
     border: 0;
     border-radius: 8px;
-    color: #145740;
+    color: #FF0000;
     background: transparent;
     cursor: pointer;
 }
@@ -551,14 +551,14 @@
 }
 
 .sp-icon-button:hover {
-    background: #eaf3ed;
+    background: #FCE2E2;
 }
 
 .sp-text-button {
     padding: 0;
     border: 0;
     background: transparent;
-    color: #145740;
+    color: #FF0000;
     font-family: inherit;
     font-size: 13px;
     cursor: pointer;
@@ -662,7 +662,7 @@
 .sp-field select:focus,
 .sp-search-wrapper input:focus {
     outline: none;
-    border-color: #145740;
+    border-color: #FF0000;
     box-shadow: 0 0 0 3px rgba(20, 87, 64, .10);
 }
 
@@ -699,10 +699,10 @@
     justify-content: center;
     gap: 9px;
     padding: 20px;
-    border: 1px dashed #b7cbbd;
+    border: 1px dashed #DCDCDF;
     border-radius: 12px;
     background: #f8fcf9;
-    color: #145740;
+    color: #FF0000;
     text-align: center;
 }
 
@@ -736,7 +736,7 @@
     border-radius: 7px;
     padding: 9px 13px;
     margin-right: 8px;
-    background: #145740;
+    background: #FF0000;
     color: #ffffff;
     cursor: pointer;
 }
@@ -787,7 +787,7 @@
 }
 
 .sp-map-result:hover {
-    background: #eaf3ed;
+    background: #FCE2E2;
 }
 
 .sp-map-results p {
@@ -812,7 +812,7 @@
     gap: 8px;
     margin-top: 15px;
     padding: 15px;
-    border: 1px solid #d4e5da;
+    border: 1px solid #DCDCDF;
     border-radius: 10px;
     background: #f1f7f2;
 }
@@ -823,7 +823,7 @@
 }
 
 .sp-map-selection strong {
-    color: #145740;
+    color: #FF0000;
     font-size: 13px;
     overflow-wrap: anywhere;
 }
@@ -935,7 +935,7 @@
 .sp-empty svg {
     width: 28px;
     height: 28px;
-    color: #145740;
+    color: #FF0000;
 }
 
 /* ==========================================

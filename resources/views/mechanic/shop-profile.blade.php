@@ -38,7 +38,7 @@
 
             @if(
                 $profile->is_verified &&
-                $profile->verification_status === 'approved'
+                in_array($profile->verification_status, ['fully_verified', 'approved'], true)
             )
 
                 <span class="sp-verified">
@@ -312,7 +312,7 @@
          ===================================== --}}
 
     <form method="POST"
-          action="{{ route('mechanic.shop-profile.update') }}"
+          action="{{ route('mechanic.shop-profile.details.update') }}"
           id="sp-main-form"
           class="sp-main-form">
 
@@ -537,7 +537,7 @@
     </div>
 
     <form method="POST"
-          action="{{ route('mechanic.shop-profile.owner.update') }}"
+          action="{{ route('mechanic.shop-profile.owner.details.update') }}"
           enctype="multipart/form-data"
           class="sp-dialog-form">
 
@@ -986,24 +986,13 @@
 
 {{-- JAVASCRIPT CONFIGURATION --}}
 
-<script>
-
-window.FixMotoShopProfile = {
-
-    cityBoundary: {{ Js::from($cityBoundary ?? null) }},
-
-    serviceLabels: {{ Js::from($serviceLabels) }},
-
-    searchUrl: {{ Js::from(
-        route('locations.search', [], false)
-    ) }},
-
-    reverseUrl: {{ Js::from(
-        route('locations.reverse', [], false)
-    ) }}
-
-};
-
+<script type="application/json" id="sp-shop-profile-config">
+{!! Js::encode([
+    'cityBoundary' => $cityBoundary ?? null,
+    'serviceLabels' => $serviceLabels,
+    'searchUrl' => route('locations.search', [], false),
+    'reverseUrl' => route('locations.reverse', [], false),
+]) !!}
 </script>
 
 <script src="{{ asset('js/shop-profile.js') }}?v=1"

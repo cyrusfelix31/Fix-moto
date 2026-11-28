@@ -17,20 +17,28 @@ class RegistrationOtpService
     /** @return array{0: RegistrationOtp, 1: string} */
     public function issue(string $email, array $payload, string $purpose = 'registration'): array
     {
-        $digitCount = max(4, min(9, (int) config('fixmoto.otp_length', 6)));
-        $minimum = 10 ** ($digitCount - 1);
-        $maximum = (10 ** $digitCount) - 1;
-        $code = str_pad((string) random_int(0, $maximum), $digitCount, '0', STR_PAD_LEFT);
         $expiration = max(1, (int) config('fixmoto.otp_expiration_minutes', 5));
 
         $oldDocumentPaths = [];
-        $challenge = DB::transaction(function () use ($email, $payload, $code, $expiration, $purpose, &$oldDocumentPaths): RegistrationOtp {
+        $code = '';
+        $challenge = DB::transaction(function () use ($email, $payload, &$code, $expiration, $purpose, &$oldDocumentPaths): RegistrationOtp {
             $previous = RegistrationOtp::query()
                 ->where('email', $email)
                 ->where('purpose', $purpose)
                 ->whereNull('verified_at')
                 ->lockForUpdate()
                 ->get();
+
+            do {
+                $code = $this->generateCode();
+                $matchesPreviousCode = false;
+                foreach ($previous as $item) {
+                    if (Hash::check($code, $item->otp_hash)) {
+                        $matchesPreviousCode = true;
+                        break;
+                    }
+                }
+            } while ($matchesPreviousCode);
 
             foreach ($previous as $item) {
                 if ($purpose === 'registration') {
@@ -64,9 +72,9 @@ class RegistrationOtpService
 
     public function resend(RegistrationOtp $challenge): string
     {
-        $digitCount = max(4, min(9, (int) config('fixmoto.otp_length', 6)));
-        $maximum = (10 ** $digitCount) - 1;
-        $code = str_pad((string) random_int(0, $maximum), $digitCount, '0', STR_PAD_LEFT);
+        do {
+            $code = $this->generateCode();
+        } while (Hash::check($code, $challenge->otp_hash));
 
         $challenge->update([
             'otp_hash' => Hash::make($code),
@@ -76,6 +84,14 @@ class RegistrationOtpService
         ]);
 
         return $code;
+    }
+
+    private function generateCode(): string
+    {
+        $digitCount = 6;
+        $maximum = (10 ** $digitCount) - 1;
+
+        return str_pad((string) random_int(0, $maximum), $digitCount, '0', STR_PAD_LEFT);
     }
 
     public function send(RegistrationOtp $challenge, string $code): void

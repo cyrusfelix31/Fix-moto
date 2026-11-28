@@ -63,7 +63,7 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/register/resend-otp', [
         AuthController::class, 'resendRegistrationOtp',
-    ])->middleware('throttle:3,1')->name('register.resend-otp');
+    ])->middleware('throttle:registration-otp-resend')->name('register.resend-otp');
 
 });
 
@@ -197,7 +197,7 @@ Route::middleware([
         ])->name('team');
 
         Route::get('/shop-profile', [
-            MechanicController::class, 'shopProfile',
+            ShopProfileController::class, 'index',
         ])->name('shop-profile');
 
         Route::post('/availability', [

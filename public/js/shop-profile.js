@@ -4,7 +4,12 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const config = window.FixMotoShopProfile;
+    const configElement = document.getElementById(
+        'sp-shop-profile-config'
+    );
+    const config = configElement
+        ? JSON.parse(configElement.textContent)
+        : window.FixMotoShopProfile;
     const get = id => document.getElementById(id);
 
     if (!config || !get('sp-main-form')) return;

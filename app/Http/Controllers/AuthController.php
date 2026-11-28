@@ -128,12 +128,23 @@ class AuthController extends Controller
             [$challenge, $code] = $otpService->issue($data['email'], $payload);
             $otpService->send($challenge, $code);
         } catch (Throwable $exception) {
-            $documentService->delete(array_column($documents, 'document_path'));
             if ($challenge) {
-                $challenge->delete();
+                $challenge->update(['resend_available_at' => now()]);
+
+                return back()->withErrors([
+                    'otp' => 'We could not deliver the verification code. Check the email delivery settings, then request a new code.',
+                ])->withInput([
+                    'challenge_id' => $challenge->id,
+                    'otp_email' => $challenge->email,
+                    'otp_resend_remaining' => 0,
+                ])->with('otp_challenge', $challenge->id)
+                    ->with('otp_email', $challenge->email)
+                    ->with('otp_resend_seconds', 0);
             }
+
+            $documentService->delete(array_column($documents, 'document_path'));
             return back()->withErrors([
-                'email' => 'We could not send the verification code. Check the email delivery settings and try again.',
+                'email' => 'We could not start email verification. Check the email delivery settings and try again.',
             ])->withInput($request->except(['password', 'password_confirmation']));
         }
 
